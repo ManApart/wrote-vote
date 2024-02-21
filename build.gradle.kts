@@ -10,6 +10,7 @@ group = "org.manapart"
 version = "1.0-SNAPSHOT"
 val serializationVersion = "1.5.0"
 val ktorVersion = "2.2.4"
+val exposedVersion = "0.41.1"
 
 repositories {
     mavenCentral()
@@ -63,7 +64,10 @@ kotlin {
                 implementation("io.ktor:ktor-server-partial-content:$ktorVersion")
                 implementation("io.ktor:ktor-server-auto-head-response:$ktorVersion")
                 implementation("org.slf4j:slf4j-nop:2.0.12")
-
+                implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+                implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+                implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+                implementation("org.xerial:sqlite-jdbc:3.44.1.0")
             }
         }
         val jvmTest by getting

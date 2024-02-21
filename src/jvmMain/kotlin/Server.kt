@@ -15,6 +15,11 @@ fun main() {
     val usedPort = System.getenv("PORT")?.toInt() ?: 9090
     println("Wrote Vote started on port $usedPort")
 
+    initializeDB()
+    writeTest()
+    readTest()
+    println("DB Tests done")
+
     val environment = applicationEngineEnvironment {
         connector {
             port = usedPort
