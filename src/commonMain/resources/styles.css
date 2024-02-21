@@ -1,0 +1,17 @@
+:root {
+  --white: #fff;
+  --bright: #fce4a8;
+  --blue: #71969f;
+  --dark-blue: #01334e;
+  --red: #d71a21;
+}
+
+body {
+    background-color: var(--bright);
+    color: white;
+}
+
+
+.sample {
+    height: 20px;
+}
