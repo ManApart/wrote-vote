@@ -26,10 +26,8 @@ class User(id: EntityID<Int>) : IntEntity(id) {
 }
 
 fun initializeDB() {
-//    Database.connect("jdbc:sqlite:/data/data.db", "org.sqlite.JDBC")
-    database = Database.connect("jdbc:sqlite:file:test?mode=memory&cache=shared", "org.sqlite.JDBC")
-    TransactionManager.manager.defaultIsolationLevel =
-        Connection.TRANSACTION_SERIALIZABLE
+    Database.connect("jdbc:postgresql://localhost:15432/postgres", driver = "org.postgresql.Driver",
+        user = "root", password = "secret")
 }
 
 fun writeTest() {
@@ -45,6 +43,6 @@ fun writeTest() {
 fun readTest() {
     println("Reading:")
     transaction {
-//        println("Users: ${User.all().map { it.name }}")
+        println("Users: ${User.all().map { it.name }}")
     }
 }
