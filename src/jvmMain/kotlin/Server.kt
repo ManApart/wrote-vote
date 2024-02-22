@@ -83,26 +83,40 @@ fun main() {
                 }
                 get("/callback") {
                     val currentPrincipal: OAuthAccessTokenResponse.OAuth2? = call.principal()
-                    println(currentPrincipal.toString())
-                    // redirects home if the url is not found before authorization
-                    currentPrincipal?.let { principal ->
-                        principal.state?.let { state ->
-                            call.sessions.set(UserSession(state, principal.accessToken))
-                            redirects[state]?.let { redirect ->
-                                call.respondRedirect(redirect)
-                                return@get
-                            }
+                    val code = call.request.queryParameters["code"]
+                    val state = call.request.queryParameters["state"]
+                    val scopes = call.request.queryParameters["scope"]
+                    println("$code $state $scopes")
+
+                    if (code != null && state != null){
+                        call.sessions.set(UserSession(state, code))
+                        redirects[state]?.let { redirect ->
+                            call.respondRedirect(redirect)
+                            return@get
                         }
                     }
+//
+//                    println("callback with principal $currentPrincipal")
+//                    currentPrincipal?.let { principal ->
+//                        principal.state?.let { state ->
+//                        println("Setting principal ${principal.accessToken}")
+//                            call.sessions.set(UserSession(state, principal.accessToken))
+//                            redirects[state]?.let { redirect ->
+//                                call.respondRedirect(redirect)
+//                                return@get
+//                            }
+//                        }
+//                    }
                     call.respondRedirect("/home")
                 }
                 get("/home") {
-                    call.respondText("Hello! Welcome home!")
-//                    val userSession: UserSession? = getSession(call)
-//                    if (userSession != null) {
-//                        val userInfo: UserInfo = getPersonalGreeting(httpClient, userSession)
-//                        call.respondText("Hello, ${userInfo.name}! Welcome home!")
-//                    }
+                    val userSession: UserSession? = getSession(call)
+                    println("ses: $userSession")
+                    if (userSession != null) {
+                        val userInfo: UserInfo = getPersonalGreeting(httpClient, userSession)
+                        println("info: $userInfo")
+                        call.respondText("Hello, ${userInfo.name}! Welcome home!")
+                    }
                 }
                 get("/") {
                     call.respondText(
