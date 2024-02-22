@@ -1,6 +1,9 @@
+import io.ktor.client.*
+import io.ktor.client.engine.cio.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.engine.*
 import io.ktor.server.http.content.*
 import io.ktor.server.netty.*
@@ -10,15 +13,22 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.ktor.server.sessions.*
+
+val httpClient = HttpClient(CIO) {
+    install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+        json()
+    }
+}
 
 fun main() {
-    val usedPort = System.getenv("PORT")?.toInt() ?: 9090
+    val usedPort = System.getenv("PORT")?.toInt() ?: 8080
     println("Wrote Vote started on port $usedPort")
 
-    initializeDB()
-    writeTest()
-    readTest()
-    println("DB Tests done")
+//    initializeDB()
+//    writeTest()
+//    readTest()
+//    println("DB Tests done")
 
     val environment = applicationEngineEnvironment {
         connector {
@@ -26,6 +36,33 @@ fun main() {
         }
 
         module {
+            install(Sessions) {
+                cookie<UserSession>("user_session")
+            }
+            val redirects = mutableMapOf<String, String>()
+            install(Authentication) {
+                oauth("auth-oauth-hydra") {
+                    urlProvider = { "http://localhost:8080/callback" }
+                    providerLookup = {
+                        OAuthServerSettings.OAuth2ServerSettings(
+                            name = "hydra",
+                            authorizeUrl = "http://127.0.0.1:4444/oauth2/auth",
+                            accessTokenUrl = "http://127.0.0.1:4444/oauth2/token",
+                            requestMethod = HttpMethod.Post,
+                            clientId = "715f5a53-7aa7-44c3-b827-2dfa4c01e776",
+                            clientSecret = "6umRg4u_2JB80D.y.7qJ_pQLTW",
+                            defaultScopes = listOf("offline"),
+                            extraAuthParameters = listOf("access_type" to "offline"),
+                            onStateCreated = { call, state ->
+                                call.request.queryParameters["redirectUrl"]?.let {
+                                    redirects[state] = it
+                                }
+                            }
+                        )
+                    }
+                    client = httpClient
+                }
+            }
             install(ContentNegotiation) {
                 json()
             }
@@ -41,6 +78,32 @@ fun main() {
             install(io.ktor.server.plugins.partialcontent.PartialContent)
             install(AutoHeadResponse)
             routing {
+                authenticate("auth-oauth-hydra") {
+                    get("/login") { }
+                }
+                get("/callback") {
+                    val currentPrincipal: OAuthAccessTokenResponse.OAuth2? = call.principal()
+                    println(currentPrincipal.toString())
+                    // redirects home if the url is not found before authorization
+                    currentPrincipal?.let { principal ->
+                        principal.state?.let { state ->
+                            call.sessions.set(UserSession(state, principal.accessToken))
+                            redirects[state]?.let { redirect ->
+                                call.respondRedirect(redirect)
+                                return@get
+                            }
+                        }
+                    }
+                    call.respondRedirect("/home")
+                }
+                get("/home") {
+                    call.respondText("Hello! Welcome home!")
+//                    val userSession: UserSession? = getSession(call)
+//                    if (userSession != null) {
+//                        val userInfo: UserInfo = getPersonalGreeting(httpClient, userSession)
+//                        call.respondText("Hello, ${userInfo.name}! Welcome home!")
+//                    }
+                }
                 get("/") {
                     call.respondText(
                         this::class.java.classLoader.getResource("index.html")!!.readText(),
