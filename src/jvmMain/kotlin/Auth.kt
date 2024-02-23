@@ -4,13 +4,14 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-data class UserSession(val state: String, val token: String)
+data class UserSession(val state: String, val token: String) : Principal
 
 suspend fun getSession(
     call: ApplicationCall
@@ -35,8 +36,8 @@ suspend fun getPersonalGreeting(
 
     val request = httpClient.get("http://localhost:4444/userinfo") {
         headers {
-            println(userSession.token)
-            append(HttpHeaders.Authorization, "Bearer ${userSession.token}")
+//            println(userSession.token)
+//            append(HttpHeaders.Authorization, "Bearer ${userSession.token}")
         }
     }
     return request.bodyAsText()

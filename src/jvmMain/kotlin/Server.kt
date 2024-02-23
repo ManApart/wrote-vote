@@ -50,8 +50,17 @@ fun main() {
                             null
                         }
                     }
-
                 }
+
+                session<UserSession>("auth-session") {
+                    validate { session ->
+                        session
+                    }
+                    challenge {
+                        call.respondRedirect("/login")
+                    }
+                }
+
                 oauth("auth-oauth-hydra") {
                     urlProvider = { "http://localhost:8080/callback" }
                     providerLookup = {
@@ -97,6 +106,8 @@ fun main() {
                     val state = call.request.queryParameters["state"]
                     val scopes = call.request.queryParameters["scope"]
                     println("$code $state $scopes")
+                    val principal = call.principal<OAuthAccessTokenResponse.OAuth2>()
+                    println("Prince: ${principal?.accessToken}")
 
                     if (code != null && state != null) {
                         call.sessions.set(UserSession(state, code))
@@ -108,22 +119,23 @@ fun main() {
                     call.respondRedirect("/home")
                 }
 
-                get("/home") {
-                    val userSession: UserSession? = getSession(call)
-                    println("ses: $userSession")
-                    if (userSession != null) {
-                        val userInfo = getPersonalGreeting(httpClient, userSession)
+                //This properly gets principal
+                authenticate("auth-session") {
+                    get("/home") {
+                        val principal = call.principal<UserSession>()!!
+                        val userInfo = getPersonalGreeting(httpClient, principal)
                         println("info: $userInfo")
                         call.respondText("Hello, ${userInfo}! Welcome home!")
-//                        call.respondText("Hello, ${userInfo.name}! Welcome home!")
                     }
                 }
+
                 authenticate("auth-basic") {
                     get("/home2") {
                         call.respondText("Hello, ${call.principal<UserIdPrincipal>()?.name}!")
 
                     }
                 }
+
                 get("/") {
                     call.respondText(
                         this::class.java.classLoader.getResource("index.html")!!.readText(),
