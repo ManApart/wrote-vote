@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.html.dom.append
+import kotlinx.html.js.a
 import kotlinx.html.js.div
 import kotlinx.html.style
 import org.w3c.dom.HTMLElement
@@ -24,6 +25,7 @@ fun main() {
             div("sample") { style = "background-color: var(--blue)" }
             div("sample") { style = "background-color: var(--dark-blue)" }
             div("sample") { style = "background-color: var(--red)" }
+            a(href = "/login") { +"Login" }
         }
         CoroutineScope(Dispatchers.Default).launch {
 

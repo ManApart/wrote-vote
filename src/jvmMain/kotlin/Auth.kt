@@ -1,6 +1,7 @@
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
@@ -17,11 +18,11 @@ suspend fun getSession(
     val userSession: UserSession? = call.sessions.get()
     //if there is no session, redirect to login
     if (userSession == null) {
-//        val redirectUrl = URLBuilder("http://localhost:8080/login").run {
-//            parameters.append("redirectUrl", call.request.uri)
-//            build()
-//        }
-//        call.respondRedirect(redirectUrl)
+        val redirectUrl = URLBuilder("http://localhost:8080/login").run {
+            parameters.append("redirectUrl", call.request.uri)
+            build()
+        }
+        call.respondRedirect(redirectUrl)
         return null
     }
     return userSession
@@ -30,12 +31,16 @@ suspend fun getSession(
 suspend fun getPersonalGreeting(
     httpClient: HttpClient,
     userSession: UserSession
-): UserInfo = httpClient.get("http://localhost:4444/userinfo") {
-    headers {
-        append(HttpHeaders.Authorization, "Bearer ${userSession.token}")
-    }
-}.body()
+): String {
 
+    val request = httpClient.get("http://localhost:4444/userinfo") {
+        headers {
+            println(userSession.token)
+            append(HttpHeaders.Authorization, "Bearer ${userSession.token}")
+        }
+    }
+    return request.bodyAsText()
+}
 
 @Serializable
 data class UserInfo(

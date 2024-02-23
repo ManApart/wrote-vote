@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "wrote-vote",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

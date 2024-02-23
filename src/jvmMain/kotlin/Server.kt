@@ -41,6 +41,17 @@ fun main() {
             }
             val redirects = mutableMapOf<String, String>()
             install(Authentication) {
+                basic("auth-basic") {
+                    realm = "Access to the '/' path"
+                    validate { credentials ->
+                        if (credentials.name == "bob" && credentials.password == "bob") {
+                            UserIdPrincipal(credentials.name)
+                        } else {
+                            null
+                        }
+                    }
+
+                }
                 oauth("auth-oauth-hydra") {
                     urlProvider = { "http://localhost:8080/callback" }
                     providerLookup = {
@@ -82,40 +93,35 @@ fun main() {
                     get("/login") { }
                 }
                 get("/callback") {
-                    val currentPrincipal: OAuthAccessTokenResponse.OAuth2? = call.principal()
                     val code = call.request.queryParameters["code"]
                     val state = call.request.queryParameters["state"]
                     val scopes = call.request.queryParameters["scope"]
                     println("$code $state $scopes")
 
-                    if (code != null && state != null){
+                    if (code != null && state != null) {
                         call.sessions.set(UserSession(state, code))
                         redirects[state]?.let { redirect ->
                             call.respondRedirect(redirect)
                             return@get
                         }
                     }
-//
-//                    println("callback with principal $currentPrincipal")
-//                    currentPrincipal?.let { principal ->
-//                        principal.state?.let { state ->
-//                        println("Setting principal ${principal.accessToken}")
-//                            call.sessions.set(UserSession(state, principal.accessToken))
-//                            redirects[state]?.let { redirect ->
-//                                call.respondRedirect(redirect)
-//                                return@get
-//                            }
-//                        }
-//                    }
                     call.respondRedirect("/home")
                 }
+
                 get("/home") {
                     val userSession: UserSession? = getSession(call)
                     println("ses: $userSession")
                     if (userSession != null) {
-                        val userInfo: UserInfo = getPersonalGreeting(httpClient, userSession)
+                        val userInfo = getPersonalGreeting(httpClient, userSession)
                         println("info: $userInfo")
-                        call.respondText("Hello, ${userInfo.name}! Welcome home!")
+                        call.respondText("Hello, ${userInfo}! Welcome home!")
+//                        call.respondText("Hello, ${userInfo.name}! Welcome home!")
+                    }
+                }
+                authenticate("auth-basic") {
+                    get("/home2") {
+                        call.respondText("Hello, ${call.principal<UserIdPrincipal>()?.name}!")
+
                     }
                 }
                 get("/") {
