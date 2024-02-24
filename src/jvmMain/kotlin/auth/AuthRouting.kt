@@ -1,5 +1,6 @@
 package auth
 
+import config
 import httpClient
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -25,11 +26,12 @@ fun Routing.authRoutes() {
         val tokenRequest = httpClient.post("http://127.0.0.1:4444/oauth2/token") {
             setBody(FormDataContent(
                 Parameters.build {
-                    append("client_id", "0358d9a1-7f9b-4843-a227-4f5f116b492b")
-                    append("client_secret", "3vWUF-wtquk5tbphLMK49Tbw7r")
+                    append("client_id", config.authClientId)
+                    append("client_secret", config.authClientSecret)
                     append("grant_type", "authorization_code")
                     append("state", state!!)
                     append("code", code!!)
+                    append("scope", scopes!!)
                     append("redirect_uri", "http://localhost:8080/callback")
                 }
             ))
