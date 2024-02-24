@@ -1,5 +1,9 @@
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
@@ -36,53 +40,7 @@ fun main() {
         }
 
         module {
-            install(Sessions) {
-                cookie<UserSession>("user_session")
-            }
-            val redirects = mutableMapOf<String, String>()
-            install(Authentication) {
-                basic("auth-basic") {
-                    realm = "Access to the '/' path"
-                    validate { credentials ->
-                        if (credentials.name == "bob" && credentials.password == "bob") {
-                            UserIdPrincipal(credentials.name)
-                        } else {
-                            null
-                        }
-                    }
-                }
-
-                session<UserSession>("auth-session") {
-                    validate { session ->
-                        session
-                    }
-                    challenge {
-                        call.respondRedirect("/login")
-                    }
-                }
-
-                oauth("auth-oauth-hydra") {
-                    urlProvider = { "http://localhost:8080/callback" }
-                    providerLookup = {
-                        OAuthServerSettings.OAuth2ServerSettings(
-                            name = "hydra",
-                            authorizeUrl = "http://127.0.0.1:4444/oauth2/auth",
-                            accessTokenUrl = "http://127.0.0.1:4444/oauth2/token",
-                            requestMethod = HttpMethod.Get,
-                            clientId = "1b607c87-f02e-4238-81b9-bb3b779b9824",
-                            clientSecret = "XQVxO6S7PaoayYtK7cG0~3T4Nj",
-                            defaultScopes = listOf("offline", "openid", "profile"),
-                            extraAuthParameters = listOf("access_type" to "offline"),
-                            onStateCreated = { call, state ->
-                                call.request.queryParameters["redirectUrl"]?.let {
-                                    redirects[state] = it
-                                }
-                            }
-                        )
-                    }
-                    client = httpClient
-                }
-            }
+            configureAuth()
             install(ContentNegotiation) {
                 json()
             }
@@ -105,10 +63,29 @@ fun main() {
                     val code = call.request.queryParameters["code"]
                     val state = call.request.queryParameters["state"]
                     val scopes = call.request.queryParameters["scope"]
-                    println("$code $state $scopes")
+                    val currentPrincipal: OAuthAccessTokenResponse.OAuth2? = call.principal()
+                    println("$code $state $scopes $currentPrincipal")
 
-                    if (code != null && state != null) {
-                        call.sessions.set(UserSession(state, code))
+                    val tokenRequest = httpClient.post("http://127.0.0.1:4444/oauth2/token") {
+                        setBody(FormDataContent(
+                            Parameters.build {
+                                append("client_id", "0358d9a1-7f9b-4843-a227-4f5f116b492b")
+                                append("client_secret", "3vWUF-wtquk5tbphLMK49Tbw7r")
+                                append("grant_type", "authorization_code")
+                                append("state", state!!)
+                                append("code", code!!)
+                                append("redirect_uri", "http://localhost:8080/callback")
+                            }
+                        ))
+                    }
+//                        val principal: OAuthAccessTokenResponse.OAuth2? = tokenRequest.body()
+                    val principal: Map<String, String>? = tokenRequest.body()
+//                        val principal = tokenRequest.bodyAsText()
+
+                    if (code != null && state != null && principal != null) {
+                        val session = UserSession(state, principal["id_token"]!!)
+                        call.sessions.set(session)
+                        userSessions[state] = session
                         redirects[state]?.let { redirect ->
                             call.respondRedirect(redirect)
                             return@get
@@ -117,7 +94,6 @@ fun main() {
                     call.respondRedirect("/home")
                 }
 
-                //This properly gets principal
                 authenticate("auth-session") {
                     get("/home") {
                         val principal = call.principal<UserSession>()!!
@@ -126,13 +102,13 @@ fun main() {
                         call.respondText("Hello, ${userInfo}! Welcome home!")
                     }
                 }
-
-                authenticate("auth-basic") {
-                    get("/home2") {
-                        call.respondText("Hello, ${call.principal<UserIdPrincipal>()?.name}!")
-
-                    }
-                }
+//
+//                authenticate("auth-basic") {
+//                    get("/home2") {
+//                        call.respondText("Hello, ${call.principal<UserIdPrincipal>()?.name}!")
+//
+//                    }
+//                }
 
                 get("/") {
                     call.respondText(

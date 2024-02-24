@@ -21,6 +21,7 @@ docker-compose -f quickstart.yml exec hydra sh
     --grant-type authorization_code,refresh_token \
     --response-type code,id_token \
     --format json \
+    --token-endpoint-auth-method client_secret_post \
     --scope openid --scope offline --scope profile \
     --redirect-uri http://localhost:8080/callback
     

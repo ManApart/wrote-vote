@@ -1,0 +1,29 @@
+meta {
+  name: get token
+  type: http
+  seq: 4
+}
+
+post {
+  url: http://127.0.0.1:4444/oauth2/token
+  body: formUrlEncoded
+  auth: bearer
+}
+
+auth:basic {
+  username: bob
+  password: bob
+}
+
+auth:bearer {
+  token: ory_ac_q6aC-xzn5GtFcvexP2gFnE6nmPvaolz5dQdCoLHj_Jo.wJYzoirzybnaOiAt7OvuHwjqr6rwVdnucCuw8DadSKk
+}
+
+body:form-urlencoded {
+  client_id: 0358d9a1-7f9b-4843-a227-4f5f116b492b
+  code: ory_ac_PD4bMl3ob5Lb7NNmDpICfjgURePpLbnbdHa7r10E-x8.1GhDijSXtFef325w5d57wxhNeYNhAzo4eF2bfuJAsVw
+  grant_type: authorization_code
+  redirect_uri: http://localhost:8080/callback
+  client_secret: 3vWUF-wtquk5tbphLMK49Tbw7r
+  state: 9da0d8e88c747ebe
+}
