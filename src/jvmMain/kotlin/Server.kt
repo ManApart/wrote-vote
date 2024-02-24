@@ -68,10 +68,10 @@ fun main() {
                             name = "hydra",
                             authorizeUrl = "http://127.0.0.1:4444/oauth2/auth",
                             accessTokenUrl = "http://127.0.0.1:4444/oauth2/token",
-                            requestMethod = HttpMethod.Post,
-                            clientId = "715f5a53-7aa7-44c3-b827-2dfa4c01e776",
-                            clientSecret = "6umRg4u_2JB80D.y.7qJ_pQLTW",
-                            defaultScopes = listOf("offline"),
+                            requestMethod = HttpMethod.Get,
+                            clientId = "1b607c87-f02e-4238-81b9-bb3b779b9824",
+                            clientSecret = "XQVxO6S7PaoayYtK7cG0~3T4Nj",
+                            defaultScopes = listOf("offline", "openid", "profile"),
                             extraAuthParameters = listOf("access_type" to "offline"),
                             onStateCreated = { call, state ->
                                 call.request.queryParameters["redirectUrl"]?.let {
@@ -106,8 +106,6 @@ fun main() {
                     val state = call.request.queryParameters["state"]
                     val scopes = call.request.queryParameters["scope"]
                     println("$code $state $scopes")
-                    val principal = call.principal<OAuthAccessTokenResponse.OAuth2>()
-                    println("Prince: ${principal?.accessToken}")
 
                     if (code != null && state != null) {
                         call.sessions.set(UserSession(state, code))

@@ -36,8 +36,8 @@ suspend fun getPersonalGreeting(
 
     val request = httpClient.get("http://localhost:4444/userinfo") {
         headers {
-//            println(userSession.token)
-//            append(HttpHeaders.Authorization, "Bearer ${userSession.token}")
+            println(userSession.token)
+            append(HttpHeaders.Authorization, "Bearer ${userSession.token}")
         }
     }
     return request.bodyAsText()

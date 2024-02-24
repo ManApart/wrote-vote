@@ -26,6 +26,7 @@ fun main() {
             div("sample") { style = "background-color: var(--dark-blue)" }
             div("sample") { style = "background-color: var(--red)" }
             a(href = "/login") { +"Login" }
+            mainPage()
         }
         CoroutineScope(Dispatchers.Default).launch {
 

@@ -21,18 +21,14 @@ docker-compose -f quickstart.yml exec hydra sh
     --grant-type authorization_code,refresh_token \
     --response-type code,id_token \
     --format json \
-    --scope openid --scope offline \
+    --scope openid --scope offline --scope profile \
     --redirect-uri http://localhost:8080/callback
     
     hydra perform client-credentials \
   --endpoint http://127.0.0.1:4444/ \
-  --client-id "715f5a53-7aa7-44c3-b827-2dfa4c01e776" \
-  --client-secret "6umRg4u_2JB80D.y.7qJ_pQLTW"
+  --client-id "1b607c87-f02e-4238-81b9-bb3b779b9824" \
+  --client-secret "XQVxO6S7PaoayYtK7cG0~3T4Nj"
   
-    hydra perform client-credentials \
-  --endpoint http://127.0.0.1:4444/ \
-  --client-id "5e50d357-46cc-4a1d-a282-e308503098df" \
-  --client-secret "kTITYnDF.N~.L5i2a0OGDwzPOI"
 
 hydra list oauth2-clients -e http://127.0.0.1:4445 
 

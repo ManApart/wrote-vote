@@ -6,12 +6,34 @@ import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
-import org.jetbrains.exposed.sql.transactions.TransactionManager
+import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.sql.Connection
+import java.time.LocalDateTime
 
-private lateinit var database: Database
+object Categories : IntIdTable() {
+    val name = varchar("name", 50)
+}
 
+object Candidates : IntIdTable() {
+    val name = varchar("name", 50)
+    val category = reference("category", Categories.id)
+}
+
+object Ballets : IntIdTable() {
+    val name = varchar("name", 50)
+    val category = reference("category", Categories.id)
+    val opened = datetime("opened")
+    val closed = datetime("closed")
+}
+
+object Vote : IntIdTable() {
+    val candidate = reference("candidate", Candidates.id)
+    val ballet = reference("ballet", Ballets.id)
+    val user = reference("user", Users.id)
+    val points = integer("points")
+    val submitted = datetime("date_created").clientDefault { LocalDateTime.now() }
+    val revoked = bool("revoked")
+}
 
 object Users : IntIdTable() {
     val name = varchar("name", 50).index()
@@ -26,8 +48,10 @@ class User(id: EntityID<Int>) : IntEntity(id) {
 }
 
 fun initializeDB() {
-    Database.connect("jdbc:postgresql://localhost:15432/postgres", driver = "org.postgresql.Driver",
-        user = "root", password = "secret")
+    Database.connect(
+        "jdbc:postgresql://localhost:15432/postgres", driver = "org.postgresql.Driver",
+        user = "root", password = "secret"
+    )
 }
 
 fun writeTest() {
