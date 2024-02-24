@@ -50,7 +50,7 @@ class User(id: EntityID<Int>) : IntEntity(id) {
 fun initializeDB() {
     Database.connect(
         "jdbc:postgresql://localhost:15432/postgres", driver = "org.postgresql.Driver",
-        user = "root", password = "secret"
+        user = config.postgresUser, password = config.postgresPassword
     )
 }
 

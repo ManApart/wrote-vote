@@ -1,5 +1,6 @@
 package auth
 
+import config
 import httpClient
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -41,8 +42,8 @@ fun Application.configureAuth(){
                         println("token")
                     },
                     requestMethod = HttpMethod.Post,
-                    clientId = "0358d9a1-7f9b-4843-a227-4f5f116b492b",
-                    clientSecret = "3vWUF-wtquk5tbphLMK49Tbw7r",
+                    clientId = config.authClientId,
+                    clientSecret = config.authClientSecret,
                     defaultScopes = listOf("offline", "openid", "profile"),
                     extraAuthParameters = listOf("access_type" to "offline"),
                     passParamsInURL = true,

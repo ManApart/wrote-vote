@@ -15,6 +15,8 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
+val config = readConfig()
+
 val httpClient = HttpClient(CIO) {
     install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
         json()
@@ -25,10 +27,10 @@ fun main() {
     val usedPort = System.getenv("PORT")?.toInt() ?: 8080
     println("Wrote Vote started on port $usedPort")
 
-//    initializeDB()
-//    writeTest()
-//    readTest()
-//    println("DB Tests done")
+    initializeDB()
+    writeTest()
+    readTest()
+    println("DB Tests done")
 
     val environment = applicationEngineEnvironment {
         connector {

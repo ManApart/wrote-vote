@@ -8,6 +8,24 @@
 - test DB persistance across docker down
 - test db setup idempotence
 - creat register and login flows
+- dynamically generate hydra salt/secret
+
+## Running Locally
+
+Create `./.env`, and fill it with values
+```
+export POSTGRES_USER=voter
+export POSTGRES_PASSWORD=voting
+export HYDRA_SECRET=flagsinthewind
+export HYDRA_SALT=rainovertheocean
+```
+
+```
+docker exec -it hydra sh
+
+
+```
+
 
 ## Hydra Client Setup
 

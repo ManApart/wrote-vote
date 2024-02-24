@@ -45,3 +45,5 @@ kotlin-js-store
 test.wav
 config.json
 db-data
+auth-secrets.txt
+.env
