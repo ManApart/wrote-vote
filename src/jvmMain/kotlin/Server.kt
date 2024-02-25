@@ -1,9 +1,7 @@
 import auth.authRoutes
 import auth.configureAuth
 import database.initializeDB
-import database.readTest
 import database.seedSampleData
-import database.writeTest
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.http.*
@@ -33,8 +31,6 @@ fun main() {
 
     initializeDB()
     seedSampleData()
-    readTest()
-    println("DB Tests done")
 
     val environment = applicationEngineEnvironment {
         connector {
@@ -68,6 +64,7 @@ fun main() {
                     resources("")
                 }
                 authRoutes()
+                voteApiRoutes()
             }
         }
     }

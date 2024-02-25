@@ -14,6 +14,10 @@ object Categories : IntIdTable() {
 class Category(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Category>(Categories)
     var name by Categories.name
+
+    fun toDto(): dto.Category{
+        return dto.Category(name)
+    }
 }
 
 object Candidates : IntIdTable() {
