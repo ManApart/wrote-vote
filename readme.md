@@ -3,11 +3,8 @@
 ## TODO
 - read info from hydra principal
 - create new user
-- move hydra docker compose into project compose
-- make git ignored props file for auth secrets and hydra secrets
-- test DB persistance across docker down
-- test db setup idempotence
-- creat register and login flows
+- create register and login flows
+  - Create DB user to match authed user
 - dynamically generate hydra salt/secret
 
 ## Running Locally
@@ -22,6 +19,7 @@ export HYDRA_SALT=rainovertheocean
 
 ```
 docker exec -it hydra sh
+docker exec -it vote_db psql -U president -d postgres
 
 
 ```

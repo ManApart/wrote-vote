@@ -3,6 +3,7 @@ version: '3'
 services:
   database:
     image: 'postgres:latest'
+    container_name: vote_db
     restart: always
     environment:
       - POSTGRES_USER=${POSTGRES_USER}

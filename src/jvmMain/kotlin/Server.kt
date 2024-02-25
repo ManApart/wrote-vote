@@ -1,5 +1,9 @@
 import auth.authRoutes
 import auth.configureAuth
+import database.initializeDB
+import database.readTest
+import database.seedSampleData
+import database.writeTest
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.http.*
@@ -28,7 +32,7 @@ fun main() {
     println("Wrote Vote started on port $usedPort")
 
     initializeDB()
-    writeTest()
+    seedSampleData()
     readTest()
     println("DB Tests done")
 
