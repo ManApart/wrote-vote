@@ -1,5 +1,4 @@
 :root {
-  --white: #fff;
   --bright: #fce4a8;
   --blue: #71969f;
   --dark-blue: #01334e;
@@ -8,13 +7,63 @@
 
 body {
     background-color: var(--bright);
-    color: white;
+    color: black;
 }
 
+a {
+
+}
+
+button {
+
+}
+
+table {
+}
+
+th {
+    background-color: var(--dark-blue);
+    color: white;
+    padding: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+tr:hover {
+    background-color: var(--blue);
+}
+
+td{
+    padding: 10px;
+}
 
 .sample {
     height: 20px;
 }
 
-.button-link {
+#nav {
+    margin-bottom: 20px;
 }
+
+.button-link {
+    display: inline-block;
+    color: black;
+    padding: 5px;
+    margin: 1px;
+    border-radius: 2px;
+    border: 1px solid black;
+    background-color: var(--blue);
+}
+
+.button-alert {
+    background-color: var(--red)
+}
+
+#active-ballets-table {
+    margin: auto;
+}
+
+.ballet-row {
+
+}
+

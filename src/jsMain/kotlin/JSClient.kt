@@ -6,6 +6,9 @@ import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.dom.addClass
+import kotlinx.dom.createElement
+import kotlinx.html.TagConsumer
 import kotlinx.html.dom.append
 import kotlinx.html.js.a
 import kotlinx.html.js.div
@@ -49,3 +52,19 @@ fun doRouting(windowHash: String) {
 
 fun el(id: String) = document.getElementById(id) as HTMLElement
 fun <T> el(id: String) = document.getElementById(id) as T
+
+fun replaceElement(id: String = "root", rootClasses: String? = null, newHtml: suspend TagConsumer<HTMLElement>.() -> Unit) {
+    val root = el<HTMLElement?>(id)
+    if (root != null) {
+        val newRoot = document.createElement("div") {
+            this.id = id
+            rootClasses?.split(" ")?.forEach { this.addClass(it) }
+        }
+        newRoot.append {
+            CoroutineScope(Dispatchers.Default).launch {
+                newHtml()
+            }
+        }
+        root.replaceWith(newRoot)
+    }
+}

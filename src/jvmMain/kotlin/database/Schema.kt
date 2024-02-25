@@ -5,6 +5,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.javatime.datetime
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
 
 object Categories : IntIdTable() {
@@ -13,11 +14,10 @@ object Categories : IntIdTable() {
 
 class Category(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Category>(Categories)
+
     var name by Categories.name
 
-    fun toDto(): dto.Category{
-        return dto.Category(name)
-    }
+    fun toDto() = dto.Category(id.value, name)
 }
 
 object Candidates : IntIdTable() {
@@ -40,6 +40,7 @@ object Ballets : IntIdTable() {
     val closed = datetime("closed").nullable()
 }
 
+//Add Created by
 class Ballet(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Ballet>(Ballets)
 
@@ -48,6 +49,8 @@ class Ballet(id: EntityID<Int>) : IntEntity(id) {
     var points by Ballets.points
     var opened by Ballets.opened
     var closed by Ballets.closed
+
+    fun toDto() = dto.Ballet(id.value, name, category.id.value, points, opened.toString(), closed.toString())
 }
 
 object BalletCandidates : IntIdTable() {
@@ -89,5 +92,6 @@ object Users : IntIdTable() {
 
 class User(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<User>(Users)
+
     var name by Users.name
 }
