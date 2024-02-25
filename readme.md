@@ -7,6 +7,11 @@
   - Create DB user to match authed user
 - dynamically generate hydra salt/secret
 
+## Auth notes
+can use code to call token to get auth token
+hydra hybrid flow
+add profile scope to client and autho config
+
 ## Running Locally
 
 Create `./.env`, and fill it with values

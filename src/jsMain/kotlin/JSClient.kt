@@ -11,6 +11,8 @@ import kotlinx.html.js.a
 import kotlinx.html.js.div
 import kotlinx.html.style
 import org.w3c.dom.HTMLElement
+import views.authPage
+import views.mainPage
 
 
 val client = HttpClient {
@@ -21,19 +23,29 @@ val client = HttpClient {
 
 fun main() {
     window.onload = {
-        el("root").append {
-            div("sample") { style = "background-color: var(--blue)" }
-            div("sample") { style = "background-color: var(--dark-blue)" }
-            div("sample") { style = "background-color: var(--red)" }
-            a(href = "/login") { +"Login" }
-            mainPage()
-        }
-        CoroutineScope(Dispatchers.Default).launch {
-
-        }
+        doRouting()
     }
+    window.addEventListener("popstate", { e ->
+        doRouting()
+    })
 }
 
+
+fun doRouting() {
+    doRouting(window.location.hash)
+}
+
+fun doRouting(windowHash: String) {
+    val section = windowHash.split("/").takeIf { it.size == 2 }?.last()
+    section?.let { println("Section: $it") }
+    when {
+        windowHash.startsWith("#auth") -> {
+            authPage()
+        }
+        else -> mainPage()
+    }
+    section?.let { el<HTMLElement?>(it)?.scrollIntoView() }
+}
 
 fun el(id: String) = document.getElementById(id) as HTMLElement
 fun <T> el(id: String) = document.getElementById(id) as T
