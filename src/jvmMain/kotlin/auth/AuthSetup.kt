@@ -37,6 +37,9 @@ fun Application.configureAuth(){
                 OAuthServerSettings.OAuth2ServerSettings(
                     name = "hydra",
                     authorizeUrl = "http://127.0.0.1:4444/oauth2/auth",
+                    authorizeUrlInterceptor = {
+                                              println("auth")
+                    },
                     accessTokenUrl = "http://127.0.0.1:4444/oauth2/token",
                     accessTokenInterceptor = {
                         println("token")

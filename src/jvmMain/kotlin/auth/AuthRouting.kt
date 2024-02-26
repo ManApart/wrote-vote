@@ -15,8 +15,12 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 
 fun Routing.authRoutes() {
-    authenticate("auth-oauth-hydra") {
+    authenticate("auth-oauth-hydra", optional = true) {
         get("/login") { }
+        get("/auth-test"){
+            val principal = call.principal<UserSession>()
+            call.respondText("Hello! Welcome home!")
+        }
     }
     get("/callback") {
         val code = call.request.queryParameters["code"]

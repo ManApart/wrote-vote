@@ -1,13 +1,22 @@
 meta {
-  name: get token
+  name: get code
   type: http
-  seq: 4
+  seq: 5
 }
 
-post {
-  url: http://127.0.0.1:4444/oauth2/token
+get {
+  url: http://127.0.0.1:4444/oauth2/auth?client_id=24a252be-ddbd-48d7-8b7a-ac5891f8c46c&scope=offline+openid+profile&state=e9885131aad9a54b&redirect_uri=http://localhost:8080/callback&response_type=code&access_type=offline
   body: formUrlEncoded
-  auth: bearer
+  auth: none
+}
+
+query {
+  client_id: 24a252be-ddbd-48d7-8b7a-ac5891f8c46c
+  scope: offline+openid+profile
+  state: e9885131aad9a54b
+  redirect_uri: http://localhost:8080/callback
+  response_type: code
+  access_type: offline
 }
 
 auth:basic {
@@ -25,6 +34,5 @@ body:form-urlencoded {
   grant_type: authorization_code
   redirect_uri: http://localhost:8080/callback
   client_secret: 80QAtyYNpsfZ2SLUCLcsGBE-fU
-  state: 9da0d8e88c747ebe
   scopes: profile
 }
