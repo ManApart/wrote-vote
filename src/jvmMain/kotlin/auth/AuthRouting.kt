@@ -17,10 +17,6 @@ import io.ktor.server.sessions.*
 fun Routing.authRoutes() {
     authenticate("auth-oauth-hydra") {
         get("/login") { }
-        get("/auth-test"){
-            val principal = call.principal<UserSession>()
-            call.respondText("Hello! Welcome home!")
-        }
     }
     get("/callback") {
         val code = call.request.queryParameters["code"]
@@ -50,14 +46,14 @@ fun Routing.authRoutes() {
                 return@get
             }
         }
-        call.respondRedirect("/home")
+        call.respondRedirect("/user-info")
     }
 
     authenticate("auth-session") {
-        get("/home") {
+        get("/user-info") {
             val principal = call.principal<UserSession>()!!
             val userInfo = getPersonalGreeting(httpClient, principal)
-            call.respondText("Hello, ${userInfo}! Welcome home!")
+            call.respondText("Hello, ${userInfo}!")
         }
     }
 }

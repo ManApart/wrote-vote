@@ -1,36 +1,26 @@
 # Wrote Vote
 
 ## TODO
-- read info from hydra principal
 - create new user
 - create register and login flows
   - Create DB user to match authed user
-- dynamically generate hydra salt/secret
 
-## Auth notes
-can use code to call token to get auth token
-hydra hybrid flow
-add profile scope to client and autho config
 
 ## Running Locally
 
-Create `./.env`, and fill it with values
 ```
-export POSTGRES_USER=voter
-export POSTGRES_PASSWORD=voting
-export HYDRA_SECRET=flagsinthewind
-export HYDRA_SALT=rainovertheocean
+./setup.sh
 ```
 
+Other commands
 ```
 docker exec -it hydra sh
 docker exec -it vote_db psql -U president -d postgres
 
-
 ```
 
 
-## Hydra Client Setup
+## Hydra Stuff
 
 ```
 docker-compose -f quickstart.yml up -d --build
