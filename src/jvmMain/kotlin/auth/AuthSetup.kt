@@ -12,7 +12,7 @@ import io.ktor.server.sessions.*
 val redirects = mutableMapOf<String, String>()
 val userSessions = mutableMapOf<String, UserSession>()
 
-data class UserSession(val state: String, val token: String) : Principal
+data class UserSession(val state: String, val accessToken: String, val idToken: String) : Principal
 
 fun Application.configureAuth(){
     install(Sessions) {
@@ -22,7 +22,7 @@ fun Application.configureAuth(){
     install(Authentication) {
         session<UserSession>("auth-session") {
             validate { session ->
-                if(userSessions[session.state]?.token == session.token ){
+                if(userSessions[session.state]?.idToken == session.idToken ){
                     session
                 } else null
             }

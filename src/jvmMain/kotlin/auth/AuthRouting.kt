@@ -15,7 +15,7 @@ import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 
 fun Routing.authRoutes() {
-    authenticate("auth-oauth-hydra", optional = true) {
+    authenticate("auth-oauth-hydra") {
         get("/login") { }
         get("/auth-test"){
             val principal = call.principal<UserSession>()
@@ -42,7 +42,7 @@ fun Routing.authRoutes() {
         }
         val principal: Map<String, String>? = tokenRequest.body()
         if (code != null && state != null && principal != null) {
-            val session = UserSession(state, principal["id_token"]!!)
+            val session = UserSession(state, principal["access_token"]!!, principal["id_token"]!!)
             call.sessions.set(session)
             userSessions[state] = session
             redirects[state]?.let { redirect ->
@@ -69,8 +69,8 @@ private suspend fun getPersonalGreeting(
 
     val request = httpClient.get("http://localhost:4444/userinfo") {
         headers {
-            println(userSession.token)
-            append(HttpHeaders.Authorization, "Bearer ${userSession.token}")
+            println(userSession.idToken)
+            append(HttpHeaders.Authorization, "Bearer ${userSession.accessToken}")
         }
     }
     return request.bodyAsText()

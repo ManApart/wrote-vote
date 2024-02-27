@@ -1,7 +1,7 @@
 docker-compose up -d
 
 #Replace with health check
-sleep .5
+sleep 1
 
 code_client=$(docker exec hydra hydra create client \
 --endpoint http://127.0.0.1:4445 \
