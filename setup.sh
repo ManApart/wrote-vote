@@ -14,8 +14,12 @@ fi
 
 docker-compose up -d
 
-#Replace with health check
-sleep 2
+echo Waiting for Hydra
+until [[ "`docker exec hydra hydra list oauth2-clients -e http://127.0.0.1:4445 2>&1`" = \CLIENT* ]]; do
+    sleep 0.5;
+done;
+
+echo Post Docker Setup
 
 code_client=$(docker exec hydra hydra create client \
 --endpoint http://127.0.0.1:4445 \
