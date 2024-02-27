@@ -5,7 +5,7 @@ sleep .5
 
 code_client=$(docker exec hydra hydra create client \
 --endpoint http://127.0.0.1:4445 \
---grant-type authorization_code,refresh_token \
+--grant-type client_credentials,authorization_code,refresh_token \
 --response-type code,id_token \
 --format json \
 --token-endpoint-auth-method client_secret_post \
