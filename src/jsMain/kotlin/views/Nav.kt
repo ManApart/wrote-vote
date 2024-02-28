@@ -9,6 +9,7 @@ import org.w3c.dom.HTMLElement
 fun TagConsumer<HTMLElement>.nav() {
     div {
         id = "nav"
+        a(href = "", classes = "button-link") { +"Home" }
         a(href = "#auth", classes = "button-link") { +"Auth" }
     }
 }

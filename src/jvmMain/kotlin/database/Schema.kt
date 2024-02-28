@@ -36,6 +36,7 @@ object Ballets : IntIdTable() {
     val name = varchar("name", 100)
     val category = reference("category", Categories.id)
     val points = integer("points").default(1)
+    val pointsPerChoice = integer("points_per_choice").default(1)
     val opened = datetime("opened").nullable()
     val closed = datetime("closed").nullable()
 }
@@ -47,10 +48,13 @@ class Ballet(id: EntityID<Int>) : IntEntity(id) {
     var name by Ballets.name
     var category by Category referencedOn Ballets.category
     var points by Ballets.points
+    var pointsPerChoice by Ballets.pointsPerChoice
     var opened by Ballets.opened
     var closed by Ballets.closed
 
-    fun toDto() = dto.Ballet(id.value, name, category.id.value, points, opened.toString(), closed.toString())
+    fun toDto(): dto.Ballet{
+        return dto.Ballet(id.value, name, category.id.value, points, pointsPerChoice, opened.toString(), closed.toString())
+    }
 }
 
 object BalletCandidates : IntIdTable() {
@@ -64,7 +68,6 @@ class BalletCandidate(id: EntityID<Int>) : IntEntity(id) {
     var ballet by Ballet referencedOn BalletCandidates.ballet
     var candidate by Candidate referencedOn BalletCandidates.candidate
 }
-
 
 object Votes : IntIdTable() {
     val ballet = reference("ballet", Ballets.id)

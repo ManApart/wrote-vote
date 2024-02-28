@@ -1,15 +1,20 @@
 package views
 
+import dto.Ballet
 import dto.Category
 import getActiveBallets
+import getBallet
 import getCategories
+import getVotes
 import kotlinx.html.*
 import kotlinx.html.js.onClickFunction
 import org.w3c.dom.HTMLElement
+import replaceElement
+import updateUrl
 
 private var categories = mapOf<Int, Category>()
 
-suspend fun TagConsumer<HTMLElement>.listActiveVotes() {
+suspend fun TagConsumer<HTMLElement>.listActiveBallets() {
     if (categories.isEmpty()) categories = getCategories().associateBy { it.id }
     val ballets = getActiveBallets()
     div {
@@ -27,7 +32,7 @@ suspend fun TagConsumer<HTMLElement>.listActiveVotes() {
                     td { +(ballet.opened ?: "") }
                     td { +(ballet.closed ?: "") }
                     onClickFunction = {
-                        println("Go to ballet page for ${ballet.name}")
+                        activeBallet(ballet)
                     }
                 }
             }
@@ -38,10 +43,41 @@ suspend fun TagConsumer<HTMLElement>.listActiveVotes() {
     //click into ballet view
 }
 
-fun TagConsumer<HTMLElement>.balletView() {
-
+fun activeBallet(ballet: Ballet) {
+    updateUrl("ballet", ballet.id.toString())
+    replaceElement {
+        nav()
+        balletView(ballet)
+    }
 }
 
-fun TagConsumer<HTMLElement>.editVote() {
+suspend fun TagConsumer<HTMLElement>.balletView(ballet: Ballet) {
+    //TODO - get user id from session
+    val votes = getVotes(ballet.id, 0)
+    div("ballet") {
+        h2 { +ballet.name }
+        //TODO - update per votes used
+        p { +"You have ${ballet.points} votes to spend." }
+        p { +"Each candidate can receive a max of ${ballet.pointsPerChoice} votes." }
+
+        table {
+            th { +"" }
+            th { +"Candidate" }
+            votes.forEach { vote ->
+                tr {
+                    td {
+                        checkBoxInput {  }
+                    }
+                    td { +vote.selectionName }
+                }
+            }
+        }
+        button(classes = "button-alert") {
+            +"Submit"
+        }
+    }
+}
+
+fun TagConsumer<HTMLElement>.createBallet() {
 
 }

@@ -14,6 +14,7 @@ import kotlinx.html.js.a
 import kotlinx.html.js.div
 import kotlinx.html.style
 import org.w3c.dom.HTMLElement
+import views.activeBallet
 import views.authPage
 import views.mainPage
 
@@ -35,19 +36,36 @@ fun main() {
 
 
 fun doRouting() {
-    doRouting(window.location.hash)
+    CoroutineScope(Dispatchers.Default).launch {
+        doRouting(window.location.hash)
+    }
 }
 
-fun doRouting(windowHash: String) {
+suspend fun doRouting(windowHash: String) {
     val section = windowHash.split("/").takeIf { it.size == 2 }?.last()
     section?.let { println("Section: $it") }
     when {
         windowHash.startsWith("#auth") -> {
             authPage()
         }
+
+        windowHash.startsWith("#ballet/") -> {
+            val ballet = getBallet(section?.toIntOrNull() ?: 0)
+            activeBallet(ballet)
+        }
+
         else -> mainPage()
     }
     section?.let { el<HTMLElement?>(it)?.scrollIntoView() }
+}
+
+fun updateUrl(path: String, section: String? = null) {
+    val pathName = path.split("/").first().capitalize()
+    val newPath = path + (section?.let { "/$it" } ?: "")
+    if (!window.location.href.endsWith("#$newPath")) {
+        window.history.pushState(null, "", "#$newPath")
+    }
+    document.title = "Vote: $pathName"
 }
 
 fun el(id: String) = document.getElementById(id) as HTMLElement

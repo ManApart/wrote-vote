@@ -4,6 +4,8 @@
 - create new user
 - create register and login flows
   - Create DB user to match authed user
+- view historical votes (per user, totals)
+- reporting
 
 
 ## Running Locally
