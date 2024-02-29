@@ -1,7 +1,9 @@
+import auth.UserSession
 import database.Ballet
 import database.Category
 import database.Vote
 import io.ktor.server.application.*
+import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -27,8 +29,7 @@ fun Route.voteApiRoutes() {
 
     get("/ballet/{ballet}/votes") {
         val ballet = call.parameters["ballet"]!!.toInt()
-        val user = call.parameters["user"]!!.toInt()
-        //Get user from principle
+        val principal = call.principal<UserSession>()!!
 
         //Auth that user in session is same as user id asked for
         //If votes doen't exist, look up ballet and create votes
@@ -39,8 +40,9 @@ fun Route.voteApiRoutes() {
 
     put("/ballet/{ballet}/votes") {
         val ballet = call.parameters["ballet"]!!.toInt()
-        val user = call.parameters["user"]!!.toInt()
         val votes = call.receive<List<Vote>>()
+        val principal = call.principal<UserSession>()!!
+
         //Auth user matches ballet / votes
         //Get specific ballet
         //Check vote count per vote and total

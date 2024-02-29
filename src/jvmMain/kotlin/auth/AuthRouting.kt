@@ -13,6 +13,9 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import java.util.Base64
 
 fun Routing.authRoutes() {
     authenticate("auth-oauth-hydra") {
@@ -38,7 +41,12 @@ fun Routing.authRoutes() {
         }
         val principal: Map<String, String>? = tokenRequest.body()
         if (code != null && state != null && principal != null) {
-            val session = UserSession(state, principal["access_token"]!!, principal["id_token"]!!)
+            val jwtPayload = principal["id_token"]!!.split(".")[1]
+            val decoded = String(Base64.getDecoder().decode(jwtPayload))
+            val map = Json.parseToJsonElement(decoded)
+            val sub = map.jsonObject.getValue("sub")
+            //TODO translate sub to user id
+            val session = UserSession(0, state, principal["access_token"]!!, principal["id_token"]!!)
             call.sessions.set(session)
             userSessions[state] = session
             redirects[state]?.let { redirect ->

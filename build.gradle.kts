@@ -63,7 +63,6 @@ kotlin {
                 implementation("io.ktor:ktor-server-netty:$ktorVersion")
                 implementation("io.ktor:ktor-server-partial-content:$ktorVersion")
                 implementation("io.ktor:ktor-server-auto-head-response:$ktorVersion")
-                implementation("io.ktor:ktor-server-auto-head-request:$ktorVersion")
                 implementation("io.ktor:ktor-server-auth:$ktorVersion")
                 implementation("io.ktor:ktor-client-core:$ktorVersion")
                 implementation("io.ktor:ktor-client-cio:$ktorVersion")

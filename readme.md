@@ -6,6 +6,8 @@
   - Create DB user to match authed user
 - view historical votes (per user, totals)
 - reporting
+- Do full user/group/role/permission permissions
+- add keycloak auth?
 
 
 ## Running Locally

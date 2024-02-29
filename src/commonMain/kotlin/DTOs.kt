@@ -17,12 +17,6 @@ data class Ballet(
 )
 
 @Serializable
-data class BalletCandidate(
-    val id: Int,
-    val name: String,
-)
-
-@Serializable
 data class Vote(
     val id: Int,
     val selectionName: String,
