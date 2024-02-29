@@ -75,7 +75,6 @@ object Votes : IntIdTable() {
     val user = reference("user", Users.id)
     val points = integer("points").default(1)
     val submitted = datetime("date_created").clientDefault { LocalDateTime.now() }
-    val revoked = bool("revoked").nullable()
 }
 
 class Vote(id: EntityID<Int>) : IntEntity(id) {
@@ -86,15 +85,18 @@ class Vote(id: EntityID<Int>) : IntEntity(id) {
     var selection by BalletCandidate referencedOn Votes.selection
     var points by Votes.points
     var submitted by Votes.submitted
-    var revoked by Votes.revoked
+
+    fun toDto() = dto.Vote(id.value, selection.candidate.name, points)
 }
 
 object Users : IntIdTable() {
     val name = varchar("name", 50).index()
+    val sub = varchar("sub", 50).index()
 }
 
 class User(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<User>(Users)
 
     var name by Users.name
+    var sub by Users.sub
 }

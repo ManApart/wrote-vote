@@ -13,7 +13,7 @@ val redirects = mutableMapOf<String, String>()
 val userSessions = mutableMapOf<String, UserSession>()
 
 data class UserSession(
-    val id: Int,
+    val userId: Int,
     val state: String,
     val accessToken: String,
     val idToken: String

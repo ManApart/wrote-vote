@@ -36,7 +36,7 @@ fun seedSampleData() {
             val bc1 = BalletCandidate.new { this.ballet = ballet; candidate = c1 }
             BalletCandidate.new { this.ballet = ballet; candidate = c2 }
 
-            val user = User.new { name = "Bob" }
+            val user = User.new { name = "Bob"; sub = "foo@foobar.com" }
             Vote.new { this.ballet = ballet; this.user = user; selection = bc1 }
         }
     }
