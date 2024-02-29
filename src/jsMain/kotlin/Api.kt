@@ -19,12 +19,15 @@ suspend fun getBallet(id: Int): Ballet {
     return getSingle("ballet/$id", sampleBallet)
 }
 
-suspend fun getVotes(balletId: Int, userId: Int): List<Vote> {
-    return getList("ballet/$balletId/$userId/votes", listOf(Vote(0, "Soup"), Vote(1, "Salad")))
+suspend fun getVotes(balletId: Int): List<Vote> {
+    return getList("ballet/$balletId/votes", listOf(Vote(0, "Soup"), Vote(1, "Salad")))
 }
 
-suspend fun saveVote(votes: List<Vote>) {
-    //TODO - post votes to back end to update points
+suspend fun saveVotes(balletId: Int, votes: List<Vote>): HttpStatusCode {
+    return client.put("ballet/$balletId/votes"){
+        contentType(ContentType.Application.Json)
+        setBody(votes)
+    }.status
 }
 
 suspend inline fun <reified T> getSingle(path: String, default: T): T {

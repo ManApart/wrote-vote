@@ -27,12 +27,4 @@ data class Vote(
     val id: Int,
     val selectionName: String,
     var points: Int = 0,
-//    var submitted: String,
-//    var revoked: String
 )
-
-//@Serializable
-//data class UserBallet(
-//    val balletId: Int,
-//    val name: String,
-//)

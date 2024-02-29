@@ -1,6 +1,8 @@
 import database.Ballet
 import database.Category
+import database.Vote
 import io.ktor.server.application.*
+import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -23,14 +25,25 @@ fun Route.voteApiRoutes() {
         call.respond(data)
     }
 
-    get("/ballet/{ballet}/{user}/votes") {
+    get("/ballet/{ballet}/votes") {
         val ballet = call.parameters["ballet"]!!.toInt()
         val user = call.parameters["user"]!!.toInt()
+        //Get user from principle
 
         //Auth that user in session is same as user id asked for
         //If votes doen't exist, look up ballet and create votes
         //Get vote by ballet + user
 //        val data = transaction {  Ballet[id].toDto() }
 //        call.respond(data)
+    }
+
+    put("/ballet/{ballet}/votes") {
+        val ballet = call.parameters["ballet"]!!.toInt()
+        val user = call.parameters["user"]!!.toInt()
+        val votes = call.receive<List<Vote>>()
+        //Auth user matches ballet / votes
+        //Get specific ballet
+        //Check vote count per vote and total
+        //Update votes (only point count)
     }
 }
