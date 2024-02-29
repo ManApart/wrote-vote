@@ -26,6 +26,8 @@ val httpClient = HttpClient(CIO) {
     }
 }
 
+val jsonMapper = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+
 fun main() {
     val usedPort = System.getenv("PORT")?.toInt() ?: 8080
     println("Wrote Vote started on port $usedPort")

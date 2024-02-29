@@ -1,6 +1,8 @@
 package auth
 
 import config
+import database.User
+import database.Users
 import httpClient
 import io.ktor.client.*
 import io.ktor.client.call.*
@@ -13,9 +15,17 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
+import jsonMapper
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.util.Base64
+import java.util.UUID
+
+@Serializable
+data class AuthToken(val sub: String)
 
 fun Routing.authRoutes() {
     authenticate("auth-oauth-hydra") {
@@ -43,12 +53,15 @@ fun Routing.authRoutes() {
         if (code != null && state != null && principal != null) {
             val jwtPayload = principal["id_token"]!!.split(".")[1]
             val decoded = String(Base64.getDecoder().decode(jwtPayload))
-            val map = Json.parseToJsonElement(decoded)
-            val sub = map.jsonObject.getValue("sub")
-            //TODO translate sub to user id
-            val session = UserSession(0, state, principal["access_token"]!!, principal["id_token"]!!)
+            val sub = jsonMapper.decodeFromString<AuthToken>(decoded).sub
+            val id = transaction {
+                User.find { Users.sub.eq(sub) }.single().id.value
+            }
+            val key = UUID.randomUUID().toString()
+            val serverSession = ServerSideUserSession(id, key, principal["id_token"]!!, principal["access_token"]!!)
+            val session = UserSession(id, key)
             call.sessions.set(session)
-            userSessions[state] = session
+            userSessions[id] = serverSession
             redirects[state]?.let { redirect ->
                 call.respondRedirect(redirect)
                 return@get
@@ -73,8 +86,9 @@ private suspend fun getPersonalGreeting(
 
     val request = httpClient.get("http://localhost:4444/userinfo") {
         headers {
-            println(userSession.idToken)
-            append(HttpHeaders.Authorization, "Bearer ${userSession.accessToken}")
+            val serverSession = userSessions[userSession.userId]!!
+            println(serverSession.idToken)
+            append(HttpHeaders.Authorization, "Bearer ${serverSession.accessToken}")
         }
     }
     return request.bodyAsText()

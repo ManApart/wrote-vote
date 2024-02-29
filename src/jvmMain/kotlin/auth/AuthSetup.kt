@@ -10,13 +10,19 @@ import io.ktor.server.sessions.*
 
 
 val redirects = mutableMapOf<String, String>()
-val userSessions = mutableMapOf<String, UserSession>()
+//TODO - make these expire
+val userSessions = mutableMapOf<Int, ServerSideUserSession>()
+
+data class ServerSideUserSession(
+    val userId: Int,
+    val key: String,
+    val idToken: String,
+    val accessToken: String,
+)
 
 data class UserSession(
     val userId: Int,
-    val state: String,
-    val accessToken: String,
-    val idToken: String
+    val key: String,
 ) : Principal
 
 fun Application.configureAuth(){
@@ -27,7 +33,7 @@ fun Application.configureAuth(){
     install(Authentication) {
         session<UserSession>("auth-session") {
             validate { session ->
-                if(userSessions[session.state]?.idToken == session.idToken ){
+                if(userSessions[session.userId]?.key == session.key ){
                     session
                 } else null
             }
@@ -42,13 +48,7 @@ fun Application.configureAuth(){
                 OAuthServerSettings.OAuth2ServerSettings(
                     name = "hydra",
                     authorizeUrl = "http://127.0.0.1:4444/oauth2/auth",
-                    authorizeUrlInterceptor = {
-                                              println("auth")
-                    },
                     accessTokenUrl = "http://127.0.0.1:4444/oauth2/token",
-                    accessTokenInterceptor = {
-                        println("token")
-                    },
                     requestMethod = HttpMethod.Post,
                     clientId = config.authClientId,
                     clientSecret = config.authClientSecret,
