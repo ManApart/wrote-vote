@@ -62,7 +62,7 @@ fun activeBallet(ballet: Ballet) {
 }
 
 suspend fun TagConsumer<HTMLElement>.balletView(ballet: Ballet) {
-    val votes = getVotes(ballet.id)
+    val votes = getVotes(ballet.id!!)
     div("ballet") {
         h2 { +ballet.name }
         p {
