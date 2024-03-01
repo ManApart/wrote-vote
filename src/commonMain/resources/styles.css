@@ -15,7 +15,13 @@ a {
 }
 
 button {
-
+    display: inline-block;
+    color: black;
+    padding: 5px;
+    margin: 1px;
+    border-radius: 2px;
+    border: 1px solid black;
+    background-color: var(--blue);
 }
 
 table {
@@ -69,6 +75,15 @@ td{
 }
 
 #active-ballets-table {
+    margin: auto;
+}
+
+.ballet {
+    margin: auto;
+    text-align: center;
+}
+
+.ballet table {
     margin: auto;
 }
 

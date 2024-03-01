@@ -32,6 +32,8 @@ class Candidate(id: EntityID<Int>) : IntEntity(id) {
 
     var name by Candidates.name
     var category by Category referencedOn Candidates.category
+
+    fun toDto() = dto.Candidate(name, category.id.value, id.value)
 }
 
 object Ballets : IntIdTable() {
@@ -54,7 +56,7 @@ class Ballet(id: EntityID<Int>) : IntEntity(id) {
     var opened by Ballets.opened
     var closed by Ballets.closed
 
-    fun toDto() = dto.Ballet(id.value, name, category.id.value, points, pointsPerChoice, opened?.toString(), closed?.toString())
+    fun toDto() = dto.Ballet(name, category.id.value, points, pointsPerChoice, opened?.toString(), closed?.toString(), id.value)
 }
 
 object BalletCandidates : IntIdTable() {
@@ -137,4 +139,6 @@ object RolePermissions : IntIdTable() {
 
 object Permissions : IntIdTable() {
     val name = varchar("name", 50).index()
+    //TODO this should be an enum some how
+
 }

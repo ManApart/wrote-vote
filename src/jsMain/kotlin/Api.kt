@@ -7,7 +7,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.serialization.decodeFromString
 
-private val sampleBallet = Ballet(0, "Today's Lunch", 0, 1, 1)
+private val sampleBallet = Ballet("Today's Lunch", 0, 1, 1, id = 0)
 
 suspend fun getCategories(): List<Category> {
     return getList("categories", listOf(Category(0, "food")))

@@ -8,6 +8,8 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
 import io.ktor.server.util.*
+import io.ktor.util.pipeline.*
+import java.lang.IllegalStateException
 import java.time.Instant
 import java.time.LocalDateTime
 
@@ -16,12 +18,15 @@ val redirects = mutableMapOf<String, String>()
 
 val userSessions = mutableMapOf<Int, ServerSideUserSession>()
 
+enum class Permission { VIEW, VOTE, CREATE }
+
 data class ServerSideUserSession(
     val userId: Int,
     val key: String,
     val idToken: String,
     val accessToken: String,
-    val expires: Instant
+    val expires: Instant,
+    val permissions: List<Permission>,
 )
 
 data class UserSession(
@@ -69,5 +74,15 @@ fun Application.configureAuth() {
             }
             client = httpClient
         }
+    }
+}
+
+
+suspend fun PipelineContext<Unit, ApplicationCall>.authedWith(vararg permission: Permission, block: suspend PipelineContext<Unit, ApplicationCall>.() -> Unit){
+    val session = userSessions[call.principal<UserSession>()!!.userId]!!
+    if (session.permissions.containsAll(permission.toList())){
+        block()
+    } else {
+        throw IllegalStateException("User ${session.userId} does not have permissions $permission")
     }
 }

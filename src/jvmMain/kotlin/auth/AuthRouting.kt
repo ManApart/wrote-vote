@@ -62,8 +62,10 @@ fun Routing.authRoutes() {
             }
             val key = UUID.randomUUID().toString()
             val expires = Instant.now().plus(1, ChronoUnit.DAYS)
+            //TODO get permissions from DB
+            val permissions = listOf(Permission.CREATE)
 
-            val serverSession = ServerSideUserSession(id, key, principal["id_token"]!!, principal["access_token"]!!, expires)
+            val serverSession = ServerSideUserSession(id, key, principal["id_token"]!!, principal["access_token"]!!, expires, permissions)
             val session = UserSession(id, key)
             call.sessions.set(session)
             userSessions[id] = serverSession

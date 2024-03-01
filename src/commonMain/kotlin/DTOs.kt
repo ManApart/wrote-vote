@@ -6,14 +6,24 @@ import kotlinx.serialization.Serializable
 data class Category(val id: Int, val name: String)
 
 @Serializable
+data class Candidate(val name: String, val categoryId: Int, val id: Int? = null)
+
+@Serializable
 data class Ballet(
-    val id: Int,
     val name: String,
     val category: Int,
     val points: Int,
     val pointsPerChoice: Int,
     val opened: String? = "02/25/2024",
     val closed: String? = null,
+    val id: Int? = null,
+    val candidates: List<BalletCandidate> = emptyList(),
+)
+
+@Serializable
+data class BalletCandidate(
+    val candidate: Int,
+    val category: Int,
 )
 
 @Serializable
