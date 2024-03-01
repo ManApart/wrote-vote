@@ -86,14 +86,11 @@ suspend fun TagConsumer<HTMLElement>.balletView(ballet: Ballet) {
                                 }
                             }
                         } else {
-                            checkBoxInput {
-                                id = "checkbox-$i"
-                                onChangeFunction = {
-                                    if (el<HTMLInputElement>("checkbox-$i").checked) {
-                                        vote.points = 1
-                                    } else vote.points = 0
-                                    updateVoteCount(ballet, votes)
-                                }
+                            checkBoxComponent("checkbox-$i", vote.points == 1) { checked ->
+                                if (checked) {
+                                    vote.points = 1
+                                } else vote.points = 0
+                                updateVoteCount(ballet, votes)
                             }
                         }
                     }
@@ -104,10 +101,10 @@ suspend fun TagConsumer<HTMLElement>.balletView(ballet: Ballet) {
         button(classes = "button-alert") {
             +"Submit"
             onClickFunction = {
-                if (votes.sumOf { it.points } <= ballet.points){
+                if (votes.sumOf { it.points } <= ballet.points) {
                     CoroutineScope(Dispatchers.Default).launch {
                         val saved = saveVotes(ballet.id, votes)
-                        if (saved == HttpStatusCode.Accepted){
+                        if (saved == HttpStatusCode.Accepted) {
                             println("saved")
                             //TODO Toast, then redirect
                             mainPage()
@@ -131,4 +128,20 @@ private fun updateVoteCount(ballet: Ballet, votes: List<Vote>) {
 
 fun TagConsumer<HTMLElement>.createBallet() {
 
+}
+
+fun TagConsumer<HTMLElement>.checkBoxComponent(divId: String, initiallyChecked: Boolean, onCheck: (Boolean) -> Unit) {
+    var checked: Boolean
+    div("checkbox") {
+            id = divId
+            checked = initiallyChecked
+            if (checked) {
+                +"X"
+            }
+            onClickFunction = {
+                checked = !checked
+                onCheck(checked)
+                el(divId).innerHTML = if(checked) "X" else ""
+        }
+    }
 }
