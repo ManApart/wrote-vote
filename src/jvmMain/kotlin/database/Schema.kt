@@ -4,8 +4,8 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
@@ -91,7 +91,6 @@ class Vote(id: EntityID<Int>) : IntEntity(id) {
     fun toDto() = dto.Vote(id.value, selection.candidate.name, points)
 }
 
-
 object Users : IntIdTable() {
     val name = varchar("name", 50).index()
     val sub = varchar("sub", 50).index()
@@ -102,4 +101,40 @@ class User(id: EntityID<Int>) : IntEntity(id) {
 
     var name by Users.name
     var sub by Users.sub
+
+    fun getPermissions(): List<String> {
+        return Users.join(UserGroups, JoinType.INNER, Users.id, UserGroups.user)
+            .join(GroupRoles, JoinType.INNER, UserGroups.id, GroupRoles.group)
+            .join(RolePermissions, JoinType.INNER, GroupRoles.role, RolePermissions.role)
+            .join(Permissions, JoinType.INNER, RolePermissions.permission, Permissions.id)
+            .select (Users.id.eq(this@User.id))
+            .map { it[Permissions.name] }
+    }
+}
+
+object UserGroups : IntIdTable() {
+    val user = reference("user", Users.id)
+    val group = reference("group", Groups.id)
+}
+
+object Groups : IntIdTable() {
+    val name = varchar("name", 50).index()
+}
+
+object GroupRoles : IntIdTable() {
+    val group = reference("group", Groups.id)
+    val role = reference("role", Roles.id)
+}
+
+object Roles : IntIdTable() {
+    val name = varchar("name", 50).index()
+}
+
+object RolePermissions : IntIdTable() {
+    val role = reference("role", Roles.id)
+    val permission = reference("permission", Permissions.id)
+}
+
+object Permissions : IntIdTable() {
+    val name = varchar("name", 50).index()
 }

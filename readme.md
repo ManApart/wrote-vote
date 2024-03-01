@@ -12,7 +12,7 @@
 - Do full user/group/role/permission permissions
 - add keycloak auth?
 - error handling
-- cors for login
+- cors for redirect to login
 
 
 ## Running Locally

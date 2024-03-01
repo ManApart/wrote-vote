@@ -23,6 +23,11 @@ fun initializeDB() {
         SchemaUtils.create(BalletCandidates)
         SchemaUtils.create(Users)
         SchemaUtils.create(Votes)
+        SchemaUtils.create(Groups)
+        SchemaUtils.create(GroupRoles)
+        SchemaUtils.create(Roles)
+        SchemaUtils.create(RolePermissions)
+        SchemaUtils.create(Permissions)
     }
 }
 
@@ -38,13 +43,13 @@ fun seedSampleData() {
 
             val user = User.new { name = "Bob"; sub = "foo@bar.com" }
             Vote.new { this.ballet = ballet; this.user = user; selection = bc1 }
-        }
-    }
-}
 
-fun readTest() {
-    println("Reading:")
-    transaction {
-        println("Users: ${User.all().map { it.name }}")
+            val groupId = Groups.insertAndGetId { it[name] = "Voter" }
+            val roleId = Roles.insertAndGetId { it[name] = "Vote" }
+            val permissionId = Permissions.insertAndGetId { it[name] = "Vote" }
+            GroupRoles.insertIgnore { it[group] = groupId; it[role] = roleId }
+            RolePermissions.insertIgnore { it[role] = roleId; it[permission] = permissionId }
+
+        }
     }
 }
