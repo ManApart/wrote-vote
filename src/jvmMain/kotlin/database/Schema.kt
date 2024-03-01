@@ -54,9 +54,7 @@ class Ballet(id: EntityID<Int>) : IntEntity(id) {
     var opened by Ballets.opened
     var closed by Ballets.closed
 
-    fun toDto(): dto.Ballet{
-        return dto.Ballet(id.value, name, category.id.value, points, pointsPerChoice, opened?.toString(), closed?.toString())
-    }
+    fun toDto() = dto.Ballet(id.value, name, category.id.value, points, pointsPerChoice, opened?.toString(), closed?.toString())
 }
 
 object BalletCandidates : IntIdTable() {
@@ -80,7 +78,7 @@ object Votes : IntIdTable() {
 }
 
 class Vote(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<Vote>(Votes){
+    companion object : IntEntityClass<Vote>(Votes) {
         fun getForBallet(ballet: Int, user: Int) = Vote.find { Votes.ballet.eq(ballet).and { Votes.user.eq(user) } }
     }
 
@@ -92,7 +90,6 @@ class Vote(id: EntityID<Int>) : IntEntity(id) {
 
     fun toDto() = dto.Vote(id.value, selection.candidate.name, points)
 }
-
 
 
 object Users : IntIdTable() {

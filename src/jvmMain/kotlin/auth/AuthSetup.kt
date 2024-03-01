@@ -7,6 +7,7 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
+import io.ktor.server.util.*
 
 
 val redirects = mutableMapOf<String, String>()
@@ -47,8 +48,8 @@ fun Application.configureAuth(){
             providerLookup = {
                 OAuthServerSettings.OAuth2ServerSettings(
                     name = "hydra",
-                    authorizeUrl = "http://127.0.0.1:4444/oauth2/auth",
-                    accessTokenUrl = "http://127.0.0.1:4444/oauth2/token",
+                    authorizeUrl = "http://localhost:4444/oauth2/auth",
+                    accessTokenUrl = "http://localhost:4444/oauth2/token",
                     requestMethod = HttpMethod.Post,
                     clientId = config.authClientId,
                     clientSecret = config.authClientSecret,

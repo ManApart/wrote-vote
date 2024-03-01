@@ -40,7 +40,6 @@ suspend inline fun <reified T> getSingle(path: String, default: T): T {
 }
 
 suspend inline fun <reified T> getList(path: String, default: List<T> = emptyList()): List<T> {
-    println("Getting list at $path")
     val result = client.get(path){
         contentType(ContentType.Application.Json)
     }
