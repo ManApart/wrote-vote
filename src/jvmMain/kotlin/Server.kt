@@ -26,7 +26,10 @@ val httpClient = HttpClient(CIO) {
     }
 }
 
-val jsonMapper = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+val jsonMapper = kotlinx.serialization.json.Json {
+    ignoreUnknownKeys = true
+    encodeDefaults = false
+}
 
 fun main() {
     val usedPort = System.getenv("PORT")?.toInt() ?: 8080
@@ -47,6 +50,7 @@ fun main() {
             }
             install(CORS) {
                 allowMethod(HttpMethod.Get)
+                allowMethod(HttpMethod.Put)
                 allowMethod(HttpMethod.Post)
                 allowMethod(HttpMethod.Delete)
                 anyHost()

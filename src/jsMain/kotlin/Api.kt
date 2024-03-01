@@ -3,7 +3,9 @@ import dto.Category
 import dto.Vote
 import io.ktor.client.call.*
 import io.ktor.client.request.*
+import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.serialization.decodeFromString
 
 private val sampleBallet = Ballet(0, "Today's Lunch", 0, 1, 1)
 

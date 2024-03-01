@@ -55,7 +55,7 @@ class Ballet(id: EntityID<Int>) : IntEntity(id) {
     var closed by Ballets.closed
 
     fun toDto(): dto.Ballet{
-        return dto.Ballet(id.value, name, category.id.value, points, pointsPerChoice, opened.toString(), closed.toString())
+        return dto.Ballet(id.value, name, category.id.value, points, pointsPerChoice, opened?.toString(), closed?.toString())
     }
 }
 

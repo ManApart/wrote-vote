@@ -66,7 +66,7 @@ fun Routing.authRoutes() {
                 return@get
             }
         }
-        call.respondRedirect("/user-info")
+        call.respondRedirect("/")
     }
 
     authenticate("auth-session") {

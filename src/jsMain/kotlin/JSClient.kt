@@ -19,11 +19,16 @@ import views.authPage
 import views.mainPage
 
 
+val jsonMapper = kotlinx.serialization.json.Json {
+    ignoreUnknownKeys = true
+    encodeDefaults = false
+}
 val client = HttpClient {
     install(ContentNegotiation) {
-        json()
+        json(jsonMapper)
     }
 }
+
 
 fun main() {
     window.onload = {
