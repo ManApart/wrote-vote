@@ -4,6 +4,8 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDateTime
@@ -74,11 +76,13 @@ object Votes : IntIdTable() {
     val selection = reference("selection", BalletCandidates.id)
     val user = reference("user", Users.id)
     val points = integer("points").default(1)
-    val submitted = datetime("date_created").clientDefault { LocalDateTime.now() }
+    val submitted = datetime("date_created").nullable()
 }
 
 class Vote(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<Vote>(Votes)
+    companion object : IntEntityClass<Vote>(Votes){
+        fun getForBallet(ballet: Int, user: Int) = Vote.find { Votes.ballet.eq(ballet).and { Votes.user.eq(user) } }
+    }
 
     var ballet by Ballet referencedOn Votes.ballet
     var user by User referencedOn Votes.user
@@ -88,6 +92,8 @@ class Vote(id: EntityID<Int>) : IntEntity(id) {
 
     fun toDto() = dto.Vote(id.value, selection.candidate.name, points)
 }
+
+
 
 object Users : IntIdTable() {
     val name = varchar("name", 50).index()

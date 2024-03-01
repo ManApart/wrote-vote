@@ -4,10 +4,15 @@
 - create new user
 - create register and login flows
   - Create DB user to match authed user
+- Create Candidates
+- Create Ballet
+- Close Ballet
 - view historical votes (per user, totals)
 - reporting
 - Do full user/group/role/permission permissions
 - add keycloak auth?
+- error handling
+- cors for login
 
 
 ## Running Locally

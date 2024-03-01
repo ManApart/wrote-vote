@@ -109,6 +109,8 @@ suspend fun TagConsumer<HTMLElement>.balletView(ballet: Ballet) {
                         val saved = saveVotes(ballet.id, votes)
                         if (saved == HttpStatusCode.Accepted){
                             println("saved")
+                            //TODO Toast, then redirect
+                            mainPage()
                         } else {
                             println("Failed to save")
                         }
