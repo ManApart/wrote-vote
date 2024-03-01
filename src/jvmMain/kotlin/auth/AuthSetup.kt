@@ -8,10 +8,12 @@ import io.ktor.server.auth.*
 import io.ktor.server.response.*
 import io.ktor.server.sessions.*
 import io.ktor.server.util.*
+import java.time.Instant
+import java.time.LocalDateTime
 
 
 val redirects = mutableMapOf<String, String>()
-//TODO - make these expire
+
 val userSessions = mutableMapOf<Int, ServerSideUserSession>()
 
 data class ServerSideUserSession(
@@ -19,6 +21,7 @@ data class ServerSideUserSession(
     val key: String,
     val idToken: String,
     val accessToken: String,
+    val expires: Instant
 )
 
 data class UserSession(
@@ -26,7 +29,7 @@ data class UserSession(
     val key: String,
 ) : Principal
 
-fun Application.configureAuth(){
+fun Application.configureAuth() {
     install(Sessions) {
         cookie<UserSession>("user_session")
     }
@@ -34,13 +37,13 @@ fun Application.configureAuth(){
     install(Authentication) {
         session<UserSession>("auth-session") {
             validate { session ->
-                if(userSessions[session.userId]?.key == session.key ){
+                val serverSession = userSessions[session.userId]
+                if (serverSession != null && serverSession.key == session.key && serverSession.expires.isAfter(Instant.now())) {
                     session
                 } else null
             }
-            challenge {
-                call.respondRedirect("/login")
-            }
+            //This call for some reason breaks and they have to manually click login. Seems to have extra, unwanted headers
+            challenge("/login")
         }
 
         oauth("auth-oauth-hydra") {

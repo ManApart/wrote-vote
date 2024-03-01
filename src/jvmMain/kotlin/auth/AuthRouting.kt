@@ -19,6 +19,10 @@ import jsonMapper
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
+import java.time.temporal.TemporalAmount
 import java.util.Base64
 import java.util.UUID
 
@@ -57,7 +61,9 @@ fun Routing.authRoutes() {
                 User.find { Users.sub.eq(sub) }.single().id.value
             }
             val key = UUID.randomUUID().toString()
-            val serverSession = ServerSideUserSession(id, key, principal["id_token"]!!, principal["access_token"]!!)
+            val expires = Instant.now().plus(1, ChronoUnit.DAYS)
+
+            val serverSession = ServerSideUserSession(id, key, principal["id_token"]!!, principal["access_token"]!!, expires)
             val session = UserSession(id, key)
             call.sessions.set(session)
             userSessions[id] = serverSession
