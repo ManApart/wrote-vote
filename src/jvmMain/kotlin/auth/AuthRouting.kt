@@ -29,6 +29,7 @@ fun Routing.authRoutes() {
     authenticate("auth-oauth-hydra") {
         get("/login") { }
     }
+    put("/login") { call.respondRedirect("/login") }
     get("/callback") {
         val code = call.request.queryParameters["code"]
         val state = call.request.queryParameters["state"]
