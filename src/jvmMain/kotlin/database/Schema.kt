@@ -38,7 +38,7 @@ class Candidate(id: EntityID<Int>) : IntEntity(id) {
     fun toDto() = dto.Candidate(name, category.id.value, id.value)
 }
 
-object Ballets : IntIdTable() {
+object Ballots : IntIdTable() {
     val name = varchar("name", 100)
     val category = reference("category", Categories.id)
     val points = integer("points").default(1)
@@ -48,34 +48,34 @@ object Ballets : IntIdTable() {
 }
 
 //Add Created by
-class Ballet(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<Ballet>(Ballets)
+class Ballot(id: EntityID<Int>) : IntEntity(id) {
+    companion object : IntEntityClass<Ballot>(Ballots)
 
-    var name by Ballets.name
-    var category by Category referencedOn Ballets.category
-    var points by Ballets.points
-    var pointsPerChoice by Ballets.pointsPerChoice
-    var opened by Ballets.opened
-    var closed by Ballets.closed
+    var name by Ballots.name
+    var category by Category referencedOn Ballots.category
+    var points by Ballots.points
+    var pointsPerChoice by Ballots.pointsPerChoice
+    var opened by Ballots.opened
+    var closed by Ballots.closed
 
-    fun toDto() = dto.Ballet(name, category.id.value, points, pointsPerChoice, opened?.toString(), closed?.toString(), id.value)
+    fun toDto() = dto.Ballot(name, category.id.value, points, pointsPerChoice, opened?.toString(), closed?.toString(), id.value)
 }
 
-object BalletCandidates : IntIdTable() {
-    val ballet = reference("ballet", Ballets.id)
+object BallotCandidates : IntIdTable() {
+    val ballot = reference("ballot", Ballots.id)
     val candidate = reference("candidate", Candidates.id)
 }
 
-class BalletCandidate(id: EntityID<Int>) : IntEntity(id) {
-    companion object : IntEntityClass<BalletCandidate>(BalletCandidates)
+class BallotCandidate(id: EntityID<Int>) : IntEntity(id) {
+    companion object : IntEntityClass<BallotCandidate>(BallotCandidates)
 
-    var ballet by Ballet referencedOn BalletCandidates.ballet
-    var candidate by Candidate referencedOn BalletCandidates.candidate
+    var ballot by Ballot referencedOn BallotCandidates.ballot
+    var candidate by Candidate referencedOn BallotCandidates.candidate
 }
 
 object Votes : IntIdTable() {
-    val ballet = reference("ballet", Ballets.id)
-    val selection = reference("selection", BalletCandidates.id)
+    val ballot = reference("ballot", Ballots.id)
+    val selection = reference("selection", BallotCandidates.id)
     val user = reference("user", Users.id)
     val points = integer("points").default(1)
     val submitted = datetime("date_created").nullable()
@@ -83,12 +83,12 @@ object Votes : IntIdTable() {
 
 class Vote(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Vote>(Votes) {
-        fun getForBallet(ballet: Int, user: Int) = Vote.find { Votes.ballet.eq(ballet).and { Votes.user.eq(user) } }
+        fun getForBallot(ballot: Int, user: Int) = Vote.find { Votes.ballot.eq(ballot).and { Votes.user.eq(user) } }
     }
 
-    var ballet by Ballet referencedOn Votes.ballet
+    var ballot by Ballot referencedOn Votes.ballot
     var user by User referencedOn Votes.user
-    var selection by BalletCandidate referencedOn Votes.selection
+    var selection by BallotCandidate referencedOn Votes.selection
     var points by Votes.points
     var submitted by Votes.submitted
 

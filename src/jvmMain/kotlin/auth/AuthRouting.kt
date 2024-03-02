@@ -64,10 +64,7 @@ fun Routing.authRoutes() {
             val user = transaction {
                 User.find { Users.sub.eq(jwt.sub) }.single()
             }
-            val permissions = transaction {
-                addLogger(StdOutSqlLogger)
-                user.getPermissions()
-            }
+            val permissions = transaction { user.getPermissions() }
             val id = user.id.value
             val key = UUID.randomUUID().toString()
             val expires = Instant.now().plus(1, ChronoUnit.DAYS)

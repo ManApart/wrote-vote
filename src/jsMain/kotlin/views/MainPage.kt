@@ -7,6 +7,6 @@ fun mainPage() {
     updateUrl("/")
     replaceElement {
         nav()
-        listActiveBallets()
+        listActiveBallots()
     }
 }

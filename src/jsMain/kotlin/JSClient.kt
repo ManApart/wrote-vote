@@ -14,7 +14,7 @@ import kotlinx.html.js.a
 import kotlinx.html.js.div
 import kotlinx.html.style
 import org.w3c.dom.HTMLElement
-import views.activeBallet
+import views.activeBallot
 import views.authPage
 import views.mainPage
 
@@ -29,7 +29,6 @@ val client = HttpClient {
     }
 }
 
-
 fun main() {
     window.onload = {
         doRouting()
@@ -38,7 +37,6 @@ fun main() {
         doRouting()
     })
 }
-
 
 fun doRouting() {
     CoroutineScope(Dispatchers.Default).launch {
@@ -54,9 +52,9 @@ suspend fun doRouting(windowHash: String) {
             authPage()
         }
 
-        windowHash.startsWith("#ballet/") -> {
-            val ballet = getBallet(section?.toIntOrNull() ?: 0)
-            activeBallet(ballet)
+        windowHash.startsWith("#ballot/") -> {
+            val ballot = getBallot(section?.toIntOrNull() ?: 0)
+            activeBallot(ballot)
         }
 
         else -> mainPage()
@@ -70,7 +68,11 @@ fun updateUrl(path: String, section: String? = null) {
     if (!window.location.href.endsWith("#$newPath")) {
         window.history.pushState(null, "", "#$newPath")
     }
-    document.title = "Vote: $pathName"
+    if (pathName.isBlank()) {
+        document.title = "Vote"
+    } else {
+        document.title = "Vote: $pathName"
+    }
 }
 
 fun el(id: String) = document.getElementById(id) as HTMLElement

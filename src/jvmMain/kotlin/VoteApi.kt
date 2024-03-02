@@ -43,23 +43,23 @@ fun Route.voteApiRoutes() {
         }
     }
 
-    get("/ballets") {
-        val data = transaction { Ballet.find { Ballets.closed.isNull() }.map { it.toDto() } }
+    get("/ballots") {
+        val data = transaction { Ballot.find { Ballots.closed.isNull() }.map { it.toDto() } }
         call.respond(data)
     }
 
-    get("/ballet/{id}") {
+    get("/ballot/{id}") {
         val id = call.parameters["id"]!!.toInt()
-        val data = transaction { Ballet[id].toDto() }
+        val data = transaction { Ballot[id].toDto() }
         call.respond(data)
     }
 
-    post("/ballet") {
+    post("/ballot") {
         //TODO -should this take candidates as well?
         authedWith(Permission.CREATE) {
-            val b = call.receive<dto.Ballet>()
+            val b = call.receive<dto.Ballot>()
             val id = transaction {
-                Ballets.insertAndGetId {
+                Ballots.insertAndGetId {
                     it[name] = b.name
                     it[category] = b.category
                     it[points] = b.points
@@ -70,41 +70,41 @@ fun Route.voteApiRoutes() {
         }
     }
 
-    //update the ballet
-    put("/ballet/{id}") {
-        //TODO check permissions, and that it's the author of the ballet
+    //update the ballot
+    put("/ballot/{id}") {
+        //TODO check permissions, and that it's the author of the ballot
         authedWith(Permission.CREATE) {
             val id = call.parameters["id"]!!.toInt()
-            val candidates = call.receive<List<dto.Ballet>>()
+            val candidates = call.receive<List<dto.Ballot>>()
 
             transaction {
-                val existingBallet = Ballet[id]
-                if (existingBallet.opened == null) {
-                    val existingCandidates = BalletCandidate.find { BalletCandidates.ballet.eq(id) }
+                val existingBallot = Ballot[id]
+                if (existingBallot.opened == null) {
+                    val existingCandidates = BallotCandidate.find { BallotCandidates.ballot.eq(id) }
 //TODO - update candidates
                 }
             }
             //TODO
-            //once ballet is opened, no edits other than closing it
+            //once ballot is opened, no edits other than closing it
         }
     }
 
-    get("/ballet/{ballet}/votes") {
+    get("/ballot/{ballot}/votes") {
         authedWith(Permission.VOTE) {
-            val balletId = call.parameters["ballet"]!!.toInt()
+            val ballotId = call.parameters["ballot"]!!.toInt()
             val principal = call.principal<UserSession>()!!
 
             val votes = transaction {
-                Vote.getForBallet(balletId, principal.userId)
+                Vote.getForBallot(ballotId, principal.userId)
             }.map { it.toDto() }
 
             if (votes.isNotEmpty()) {
                 call.respond(votes)
             } else {
                 val newVotes = transaction {
-                    BalletCandidate.find { BalletCandidates.ballet.eq(balletId) }.map { candidate ->
+                    BallotCandidate.find { BallotCandidates.ballot.eq(ballotId) }.map { candidate ->
                         Votes.insertAndGetId {
-                            it[ballet] = balletId
+                            it[ballot] = ballotId
                             it[user] = principal.userId
                             it[selection] = candidate.candidate.id
                         }
@@ -116,24 +116,24 @@ fun Route.voteApiRoutes() {
         }
     }
 
-    put("/ballet/{ballet}/votes") {
+    put("/ballot/{ballot}/votes") {
         authedWith(Permission.VOTE) {
-            val ballet = call.parameters["ballet"]!!.toInt()
+            val ballot = call.parameters["ballot"]!!.toInt()
             val votes = call.receive<List<dto.Vote>>()
             val principal = call.principal<UserSession>()!!
 
-            val existingBallet = transaction { Ballet[ballet] }
+            val existingBallot = transaction { Ballot[ballot] }
             val totalPoints = votes.sumOf { it.points }
             val maxPointsPerChoice = votes.maxOf { it.points }
 
-            if (totalPoints > existingBallet.points) {
-                throw IllegalArgumentException("${principal.userId} Voted for $totalPoints which is greater than ballet's ${existingBallet.points}")
+            if (totalPoints > existingBallot.points) {
+                throw IllegalArgumentException("${principal.userId} Voted for $totalPoints which is greater than ballot's ${existingBallot.points}")
             }
-            if (maxPointsPerChoice > existingBallet.pointsPerChoice) {
-                throw IllegalArgumentException("Vote from ${principal.userId} has a candidate with $maxPointsPerChoice which is greater than ballet's ${existingBallet.pointsPerChoice}")
+            if (maxPointsPerChoice > existingBallot.pointsPerChoice) {
+                throw IllegalArgumentException("Vote from ${principal.userId} has a candidate with $maxPointsPerChoice which is greater than ballot's ${existingBallot.pointsPerChoice}")
             }
 
-            val existingVotes = transaction { Vote.getForBallet(ballet, principal.userId).associateBy { it.id.value } }
+            val existingVotes = transaction { Vote.getForBallot(ballot, principal.userId).associateBy { it.id.value } }
 
             transaction {
                 votes.forEach { vote ->

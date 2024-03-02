@@ -14,8 +14,8 @@ fun initializeDB() {
         addLogger(StdOutSqlLogger)
         SchemaUtils.create(Categories)
         SchemaUtils.create(Candidates)
-        SchemaUtils.create(Ballets)
-        SchemaUtils.create(BalletCandidates)
+        SchemaUtils.create(Ballots)
+        SchemaUtils.create(BallotCandidates)
         SchemaUtils.create(Users)
         SchemaUtils.create(Votes)
         SchemaUtils.create(UserGroups)
@@ -39,12 +39,12 @@ fun seedSampleData() {
             val lunch = Category.new { name = "lunch" }
             val c1 = Candidate.new { name = "Chick Fila"; category = lunch }
             val c2 = Candidate.new { name = "Chipotle"; category = lunch }
-            val ballet = Ballet.new { name = "Sample Vote"; category = lunch }
-            val bc1 = BalletCandidate.new { this.ballet = ballet; candidate = c1 }
-            BalletCandidate.new { this.ballet = ballet; candidate = c2 }
+            val ballot = Ballot.new { name = "Sample Vote"; category = lunch }
+            val bc1 = BallotCandidate.new { this.ballot = ballot; candidate = c1 }
+            BallotCandidate.new { this.ballot = ballot; candidate = c2 }
 
             val userDb = User.new { name = "Bob"; sub = "foo@bar.com" }
-            Vote.new { this.ballet = ballet; this.user = userDb; selection = bc1 }
+            Vote.new { this.ballot = ballot; this.user = userDb; selection = bc1 }
 
             val groupId = Groups.insertAndGetId { it[name] = "Voter" }
             val roleId = Roles.insertAndGetId { it[name] = "Vote" }

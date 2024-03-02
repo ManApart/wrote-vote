@@ -74,20 +74,20 @@ td{
     background-color: var(--red)
 }
 
-#active-ballets-table {
+#active-ballots-table {
     margin: auto;
 }
 
-.ballet {
+.ballot {
     margin: auto;
     text-align: center;
 }
 
-.ballet table {
+.ballot table {
     margin: auto;
 }
 
-.ballet-row {
+.ballot-row {
 
 }
 

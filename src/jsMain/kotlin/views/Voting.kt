@@ -1,11 +1,11 @@
 package views
 
-import dto.Ballet
+import dto.Ballot
 import dto.Category
 import dto.Vote
 import el
-import getActiveBallets
-import getBallet
+import getActiveBallots
+import getBallot
 import getCategories
 import getVotes
 import io.ktor.http.*
@@ -24,25 +24,25 @@ import updateUrl
 
 private var categories = mapOf<Int, Category>()
 
-suspend fun TagConsumer<HTMLElement>.listActiveBallets() {
+suspend fun TagConsumer<HTMLElement>.listActiveBallots() {
     if (categories.isEmpty()) categories = getCategories().associateBy { it.id }
-    val ballets = getActiveBallets()
+    val ballots = getActiveBallots()
     div {
-        id = "active-ballets"
+        id = "active-ballots"
         table {
-            id = "active-ballets-table"
+            id = "active-ballots-table"
             th { +"Category" }
-            th { +"Ballet" }
+            th { +"Ballot" }
             th { +"Opened" }
             th { +"Closes At" }
-            ballets.forEach { ballet ->
-                tr("ballet-row") {
-                    td { +(categories[ballet.category]?.name ?: "None") }
-                    td { +ballet.name }
-                    td { +(ballet.opened ?: "") }
-                    td { +(ballet.closed ?: "") }
+            ballots.forEach { ballot ->
+                tr("ballot-row") {
+                    td { +(categories[ballot.category]?.name ?: "None") }
+                    td { +ballot.name }
+                    td { +(ballot.opened ?: "") }
+                    td { +(ballot.closed ?: "") }
                     onClickFunction = {
-                        activeBallet(ballet)
+                        activeBallot(ballot)
                     }
                 }
             }
@@ -50,26 +50,26 @@ suspend fun TagConsumer<HTMLElement>.listActiveBallets() {
     }
 
     //for each vote, show name and when opened, maybe count votes submitted
-    //click into ballet view
+    //click into ballot view
 }
 
-fun activeBallet(ballet: Ballet) {
-    updateUrl("ballet", ballet.id.toString())
+fun activeBallot(ballot: Ballot) {
+    updateUrl("ballot", ballot.id.toString())
     replaceElement {
         nav()
-        balletView(ballet)
+        ballotView(ballot)
     }
 }
 
-suspend fun TagConsumer<HTMLElement>.balletView(ballet: Ballet) {
-    val votes = getVotes(ballet.id!!)
-    div("ballet") {
-        h2 { +ballet.name }
+suspend fun TagConsumer<HTMLElement>.ballotView(ballot: Ballot) {
+    val votes = getVotes(ballot.id!!)
+    div("ballot") {
+        h2 { +ballot.name }
         p {
             id = "vote-count-display"
-            +"You have spent ${votes.sumOf { it.points }}/${ballet.points} votes."
+            +"You have spent ${votes.sumOf { it.points }}/${ballot.points} votes."
         }
-        p { +"Each candidate can receive a max of ${ballet.pointsPerChoice} votes." }
+        p { +"Each candidate can receive a max of ${ballot.pointsPerChoice} votes." }
 
         table {
             th { +"" }
@@ -77,12 +77,12 @@ suspend fun TagConsumer<HTMLElement>.balletView(ballet: Ballet) {
             votes.forEachIndexed { i, vote ->
                 tr {
                     td {
-                        if (ballet.pointsPerChoice > 1) {
+                        if (ballot.pointsPerChoice > 1) {
                             numberInput {
                                 id = "number-$i"
                                 onChangeFunction = {
                                     vote.points = el<HTMLInputElement>("number-$i").value.toIntOrNull() ?: 0
-                                    updateVoteCount(ballet, votes)
+                                    updateVoteCount(ballot, votes)
                                 }
                             }
                         } else {
@@ -90,7 +90,7 @@ suspend fun TagConsumer<HTMLElement>.balletView(ballet: Ballet) {
                                 if (checked) {
                                     vote.points = 1
                                 } else vote.points = 0
-                                updateVoteCount(ballet, votes)
+                                updateVoteCount(ballot, votes)
                             }
                         }
                     }
@@ -101,9 +101,9 @@ suspend fun TagConsumer<HTMLElement>.balletView(ballet: Ballet) {
         button(classes = "button-alert") {
             +"Submit"
             onClickFunction = {
-                if (votes.sumOf { it.points } <= ballet.points) {
+                if (votes.sumOf { it.points } <= ballot.points) {
                     CoroutineScope(Dispatchers.Default).launch {
-                        val saved = saveVotes(ballet.id, votes)
+                        val saved = saveVotes(ballot.id, votes)
                         if (saved == HttpStatusCode.Accepted) {
                             println("saved")
                             //TODO Toast, then redirect
@@ -121,12 +121,12 @@ suspend fun TagConsumer<HTMLElement>.balletView(ballet: Ballet) {
     }
 }
 
-private fun updateVoteCount(ballet: Ballet, votes: List<Vote>) {
+private fun updateVoteCount(ballot: Ballot, votes: List<Vote>) {
     val voteCount = votes.sumOf { it.points }
-    el<HTMLParagraphElement>("vote-count-display").textContent = "You have spent ${voteCount}/${ballet.points} votes."
+    el<HTMLParagraphElement>("vote-count-display").textContent = "You have spent ${voteCount}/${ballot.points} votes."
 }
 
-fun TagConsumer<HTMLElement>.createBallet() {
+fun TagConsumer<HTMLElement>.createBallot() {
 
 }
 
