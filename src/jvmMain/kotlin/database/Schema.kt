@@ -1,14 +1,16 @@
 package database
 
+import auth.Permission
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.IntIdTable
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.javatime.datetime
-import org.jetbrains.exposed.sql.transactions.transaction
-import java.time.LocalDateTime
+import org.jetbrains.exposed.sql.select
+import org.postgresql.util.PGobject
 
 object Categories : IntIdTable() {
     val name = varchar("name", 50)
@@ -104,13 +106,12 @@ class User(id: EntityID<Int>) : IntEntity(id) {
     var name by Users.name
     var sub by Users.sub
 
-    fun getPermissions(): List<String> {
+    fun getPermissions(): List<Permission> {
         return Users.join(UserGroups, JoinType.INNER, Users.id, UserGroups.user)
             .join(GroupRoles, JoinType.INNER, UserGroups.id, GroupRoles.group)
             .join(RolePermissions, JoinType.INNER, GroupRoles.role, RolePermissions.role)
-            .join(Permissions, JoinType.INNER, RolePermissions.permission, Permissions.id)
             .select (Users.id.eq(this@User.id))
-            .map { it[Permissions.name] }
+            .map { it[RolePermissions.permission] }
     }
 }
 
@@ -134,11 +135,12 @@ object Roles : IntIdTable() {
 
 object RolePermissions : IntIdTable() {
     val role = reference("role", Roles.id)
-    val permission = reference("permission", Permissions.id)
+    val permission = customEnumeration("enumColumn", "Permission", {value -> Permission.valueOf(value as String)}, { PGEnum("Permission", it) })
 }
 
-object Permissions : IntIdTable() {
-    val name = varchar("name", 50).index()
-    //TODO this should be an enum some how
-
+class PGEnum<T : Enum<T>>(enumTypeName: String, enumValue: T?) : PGobject() {
+    init {
+        value = enumValue?.name
+        type = enumTypeName
+    }
 }

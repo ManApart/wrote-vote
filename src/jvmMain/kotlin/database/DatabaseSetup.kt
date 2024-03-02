@@ -1,14 +1,9 @@
 package database
 
+import auth.Permission
 import config
-import org.jetbrains.exposed.dao.IntEntity
-import org.jetbrains.exposed.dao.IntEntityClass
-import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IntIdTable
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.time.LocalDateTime
 
 fun initializeDB() {
     Database.connect(
@@ -23,11 +18,18 @@ fun initializeDB() {
         SchemaUtils.create(BalletCandidates)
         SchemaUtils.create(Users)
         SchemaUtils.create(Votes)
+        SchemaUtils.create(UserGroups)
         SchemaUtils.create(Groups)
         SchemaUtils.create(GroupRoles)
         SchemaUtils.create(Roles)
+        exec(buildString {
+            append("DO \$\$ BEGIN ")
+            append("IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'permission') THEN ")
+            append("CREATE TYPE Permission AS ENUM ('VIEW', 'VOTE', 'CREATE'); ")
+            append("END IF;" )
+            append("END \$\$ ")
+        })
         SchemaUtils.create(RolePermissions)
-        SchemaUtils.create(Permissions)
     }
 }
 
@@ -41,14 +43,15 @@ fun seedSampleData() {
             val bc1 = BalletCandidate.new { this.ballet = ballet; candidate = c1 }
             BalletCandidate.new { this.ballet = ballet; candidate = c2 }
 
-            val user = User.new { name = "Bob"; sub = "foo@bar.com" }
-            Vote.new { this.ballet = ballet; this.user = user; selection = bc1 }
+            val userDb = User.new { name = "Bob"; sub = "foo@bar.com" }
+            Vote.new { this.ballet = ballet; this.user = userDb; selection = bc1 }
 
             val groupId = Groups.insertAndGetId { it[name] = "Voter" }
             val roleId = Roles.insertAndGetId { it[name] = "Vote" }
-            val permissionId = Permissions.insertAndGetId { it[name] = "Vote" }
+            UserGroups.insertIgnore { it[user] = userDb.id; it[group] = groupId }
             GroupRoles.insertIgnore { it[group] = groupId; it[role] = roleId }
-            RolePermissions.insertIgnore { it[role] = roleId; it[permission] = permissionId }
+            RolePermissions.insertIgnore { it[role] = roleId; it[permission] = Permission.VOTE }
+            RolePermissions.insertIgnore { it[role] = roleId; it[permission] = Permission.CREATE }
 
         }
     }

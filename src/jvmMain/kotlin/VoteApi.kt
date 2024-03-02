@@ -90,54 +90,58 @@ fun Route.voteApiRoutes() {
     }
 
     get("/ballet/{ballet}/votes") {
-        val balletId = call.parameters["ballet"]!!.toInt()
-        val principal = call.principal<UserSession>()!!
+        authedWith(Permission.VOTE) {
+            val balletId = call.parameters["ballet"]!!.toInt()
+            val principal = call.principal<UserSession>()!!
 
-        val votes = transaction {
-            Vote.getForBallet(balletId, principal.userId)
-        }.map { it.toDto() }
+            val votes = transaction {
+                Vote.getForBallet(balletId, principal.userId)
+            }.map { it.toDto() }
 
-        if (votes.isNotEmpty()) {
-            call.respond(votes)
-        } else {
-            val newVotes = transaction {
-                BalletCandidate.find { BalletCandidates.ballet.eq(balletId) }.map { candidate ->
-                    Votes.insertAndGetId {
-                        it[ballet] = balletId
-                        it[user] = principal.userId
-                        it[selection] = candidate.candidate.id
-                    }
-                }.map { Vote[it].toDto() }
+            if (votes.isNotEmpty()) {
+                call.respond(votes)
+            } else {
+                val newVotes = transaction {
+                    BalletCandidate.find { BalletCandidates.ballet.eq(balletId) }.map { candidate ->
+                        Votes.insertAndGetId {
+                            it[ballet] = balletId
+                            it[user] = principal.userId
+                            it[selection] = candidate.candidate.id
+                        }
+                    }.map { Vote[it].toDto() }
+                }
+                println(newVotes)
+                call.respond(newVotes)
             }
-            println(newVotes)
-            call.respond(newVotes)
         }
     }
 
     put("/ballet/{ballet}/votes") {
-        val ballet = call.parameters["ballet"]!!.toInt()
-        val votes = call.receive<List<dto.Vote>>()
-        val principal = call.principal<UserSession>()!!
+        authedWith(Permission.VOTE) {
+            val ballet = call.parameters["ballet"]!!.toInt()
+            val votes = call.receive<List<dto.Vote>>()
+            val principal = call.principal<UserSession>()!!
 
-        val existingBallet = transaction { Ballet[ballet] }
-        val totalPoints = votes.sumOf { it.points }
-        val maxPointsPerChoice = votes.maxOf { it.points }
+            val existingBallet = transaction { Ballet[ballet] }
+            val totalPoints = votes.sumOf { it.points }
+            val maxPointsPerChoice = votes.maxOf { it.points }
 
-        if (totalPoints > existingBallet.points) {
-            throw IllegalArgumentException("${principal.userId} Voted for $totalPoints which is greater than ballet's ${existingBallet.points}")
-        }
-        if (maxPointsPerChoice > existingBallet.pointsPerChoice) {
-            throw IllegalArgumentException("Vote from ${principal.userId} has a candidate with $maxPointsPerChoice which is greater than ballet's ${existingBallet.pointsPerChoice}")
-        }
-
-        val existingVotes = transaction { Vote.getForBallet(ballet, principal.userId).associateBy { it.id.value } }
-
-        transaction {
-            votes.forEach { vote ->
-                val match = existingVotes[vote.id]
-                match?.points = vote.points
+            if (totalPoints > existingBallet.points) {
+                throw IllegalArgumentException("${principal.userId} Voted for $totalPoints which is greater than ballet's ${existingBallet.points}")
             }
+            if (maxPointsPerChoice > existingBallet.pointsPerChoice) {
+                throw IllegalArgumentException("Vote from ${principal.userId} has a candidate with $maxPointsPerChoice which is greater than ballet's ${existingBallet.pointsPerChoice}")
+            }
+
+            val existingVotes = transaction { Vote.getForBallet(ballet, principal.userId).associateBy { it.id.value } }
+
+            transaction {
+                votes.forEach { vote ->
+                    val match = existingVotes[vote.id]
+                    match?.points = vote.points
+                }
+            }
+            call.respond(HttpStatusCode.Accepted)
         }
-        call.respond(HttpStatusCode.Accepted)
     }
 }

@@ -18,6 +18,8 @@ import io.ktor.server.sessions.*
 import jsonMapper
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import org.jetbrains.exposed.sql.StdOutSqlLogger
+import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.IllegalStateException
 import java.time.Instant
@@ -59,13 +61,16 @@ fun Routing.authRoutes() {
             val decoded = String(Base64.getDecoder().decode(jwtPayload))
             val jwt = jsonMapper.decodeFromString<AuthToken>(decoded)
             if (!jwt.aud.contains(config.authClientId)) throw IllegalStateException("Token is for wrong audience!")
-            val id = transaction {
-                User.find { Users.sub.eq(jwt.sub) }.single().id.value
+            val user = transaction {
+                User.find { Users.sub.eq(jwt.sub) }.single()
             }
+            val permissions = transaction {
+                addLogger(StdOutSqlLogger)
+                user.getPermissions()
+            }
+            val id = user.id.value
             val key = UUID.randomUUID().toString()
             val expires = Instant.now().plus(1, ChronoUnit.DAYS)
-            //TODO get permissions from DB
-            val permissions = listOf(Permission.CREATE)
 
             val serverSession = ServerSideUserSession(id, key, principal["id_token"]!!, principal["access_token"]!!, expires, permissions)
             val session = UserSession(id, key)
