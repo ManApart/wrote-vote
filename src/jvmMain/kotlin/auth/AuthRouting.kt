@@ -19,6 +19,7 @@ import jsonMapper
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.lang.IllegalStateException
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -27,7 +28,7 @@ import java.util.Base64
 import java.util.UUID
 
 @Serializable
-data class AuthToken(val sub: String)
+data class AuthToken(val sub: String, val aud: List<String>)
 
 fun Routing.authRoutes() {
     authenticate("auth-oauth-hydra") {
@@ -56,9 +57,10 @@ fun Routing.authRoutes() {
         if (code != null && state != null && principal != null) {
             val jwtPayload = principal["id_token"]!!.split(".")[1]
             val decoded = String(Base64.getDecoder().decode(jwtPayload))
-            val sub = jsonMapper.decodeFromString<AuthToken>(decoded).sub
+            val jwt = jsonMapper.decodeFromString<AuthToken>(decoded)
+            if (!jwt.aud.contains(config.authClientId)) throw IllegalStateException("Token is for wrong audience!")
             val id = transaction {
-                User.find { Users.sub.eq(sub) }.single().id.value
+                User.find { Users.sub.eq(jwt.sub) }.single().id.value
             }
             val key = UUID.randomUUID().toString()
             val expires = Instant.now().plus(1, ChronoUnit.DAYS)
