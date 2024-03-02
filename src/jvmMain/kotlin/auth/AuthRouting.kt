@@ -69,6 +69,8 @@ fun Routing.authRoutes() {
             val key = UUID.randomUUID().toString()
             val expires = Instant.now().plus(1, ChronoUnit.DAYS)
 
+            println("User $id logged in with permissions $permissions")
+
             val serverSession = ServerSideUserSession(id, key, principal["id_token"]!!, principal["access_token"]!!, expires, permissions)
             val session = UserSession(id, key)
             call.sessions.set(session)

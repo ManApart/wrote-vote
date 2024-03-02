@@ -20,12 +20,13 @@ fun Route.voteApiRoutes() {
         call.respond(data)
     }
 
-    post("category") {
+    post("/category") {
         authedWith(Permission.CREATE) {
             val category = call.receiveText()
-            transaction {
-                Categories.insertIgnore { it[name] = category }
+            val id = transaction {
+                Categories.insertIgnoreAndGetId { it[name] = category }?.value
             }
+            call.respond(HttpStatusCode.Created, id ?: -1)
         }
     }
 
@@ -39,7 +40,7 @@ fun Route.voteApiRoutes() {
         authedWith(Permission.CREATE) {
             val candidate = call.receive<dto.Candidate>()
             val id = transaction { Candidates.insertIgnoreAndGetId { it[name] = candidate.name; it[category] = candidate.categoryId }?.value }
-            call.respond(id ?: -1)
+            call.respond(HttpStatusCode.Created, id ?: -1)
         }
     }
 
@@ -66,7 +67,7 @@ fun Route.voteApiRoutes() {
                     it[pointsPerChoice] = b.pointsPerChoice
                 }.value
             }
-            call.respond(id)
+            call.respond(HttpStatusCode.Created, id)
         }
     }
 

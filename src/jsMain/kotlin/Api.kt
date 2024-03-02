@@ -13,6 +13,13 @@ suspend fun getCategories(): List<Category> {
     return getList("categories", listOf(Category(0, "food")))
 }
 
+suspend fun createCategory(category: String): HttpStatusCode {
+    return client.post("category"){
+        contentType(ContentType.Application.Json)
+        setBody(category)
+    }.status
+}
+
 suspend fun getActiveBallots(): List<Ballot> {
     return getList("ballots", listOf(sampleBallot))
 }

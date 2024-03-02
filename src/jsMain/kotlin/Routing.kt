@@ -39,8 +39,8 @@ suspend fun doRouting(windowHash: String) {
 fun updateUrl(route: Route, section: String? = null) {
     val pathName = route.path.split("/").first().capitalize()
     val newPath = route.path + (section?.let { "/$it" } ?: "")
-    if (!window.location.href.endsWith("#$newPath")) {
-        window.history.pushState(null, "", "#$newPath")
+    if (!window.location.href.endsWith(newPath)) {
+        window.history.pushState(null, "", newPath)
     }
     if (pathName.isBlank()) {
         document.title = "Vote"

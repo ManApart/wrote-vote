@@ -1,6 +1,8 @@
 package views
 
+import categories
 import components.checkBoxComponent
+import components.saveAndToast
 import dto.Ballot
 import dto.Category
 import dto.Vote
@@ -22,8 +24,6 @@ import org.w3c.dom.HTMLParagraphElement
 import replaceElement
 import saveVotes
 import updateUrl
-
-private var categories = mapOf<Int, Category>()
 
 suspend fun TagConsumer<HTMLElement>.listActiveBallots() {
     if (categories.isEmpty()) categories = getCategories().associateBy { it.id }
@@ -103,15 +103,10 @@ suspend fun TagConsumer<HTMLElement>.ballotView(ballot: Ballot) {
             +"Submit"
             onClickFunction = {
                 if (votes.sumOf { it.points } <= ballot.points) {
-                    CoroutineScope(Dispatchers.Default).launch {
-                        val saved = saveVotes(ballot.id, votes)
-                        if (saved == HttpStatusCode.Accepted) {
-                            println("saved")
-                            //TODO Toast, then redirect
-                            mainPage()
-                        } else {
-                            println("Failed to save")
-                        }
+                    saveAndToast("Saved Vote",
+                        "Failed to save vote",
+                        { mainPage() }) {
+                        saveVotes(ballot.id, votes)
                     }
                 } else {
                     println("Votes exceeded!")
