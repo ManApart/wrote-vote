@@ -4,6 +4,7 @@
 - create new user
 - create register and login flows
   - Create DB user to match authed user
+- logout
 - Create Candidates
 - Create Ballot
 - Close Ballot
@@ -17,6 +18,7 @@
 - ballot should have options
   - anonymous or who voted for what
   - show results before being closed
+- Sign the jwt?
 
 
 ## Running Locally
@@ -24,6 +26,7 @@
 ```
 ./setup.sh
 ```
+To cleanup, run `./cleanup.sh`. This will delete databases and volumes.
 
 Other commands
 ```

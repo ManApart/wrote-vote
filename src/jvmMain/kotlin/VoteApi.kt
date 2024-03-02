@@ -8,9 +8,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import org.jetbrains.exposed.sql.insertAndGetId
-import org.jetbrains.exposed.sql.insertIgnore
-import org.jetbrains.exposed.sql.insertIgnoreAndGetId
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.IllegalArgumentException
 
@@ -56,7 +54,6 @@ fun Route.voteApiRoutes() {
     }
 
     post("/ballot") {
-        //TODO -should this take candidates as well?
         authedWith(Permission.CREATE) {
             val b = call.receive<dto.Ballot>()
             val id = transaction {
@@ -81,8 +78,28 @@ fun Route.voteApiRoutes() {
             transaction {
                 val existingBallot = Ballot[id]
                 if (existingBallot.opened == null) {
+//TODO - update candidates in different method
                     val existingCandidates = BallotCandidate.find { BallotCandidates.ballot.eq(id) }
-//TODO - update candidates
+                }
+            }
+            //TODO
+            //once ballot is opened, no edits other than closing it
+        }
+    }
+
+    put("/ballot/{ballot}/candidates") {
+        authedWith(Permission.CREATE) {
+            val id = call.parameters["id"]!!.toInt()
+            val candidates = call.receive<List<dto.Ballot>>()
+            //TODO check permissions, and that it's the author of the ballot
+
+            transaction {
+                val existingBallot = Ballot[id]
+                if (existingBallot.opened == null) {
+//TODO - update candidates in different method
+                    val existingCandidates = BallotCandidate.find { BallotCandidates.ballot.eq(id) }
+                    //Deactivate missing candidates
+                    //Add new candidates
                 }
             }
             //TODO
@@ -96,8 +113,10 @@ fun Route.voteApiRoutes() {
             val principal = call.principal<UserSession>()!!
 
             val votes = transaction {
+                addLogger(StdOutSqlLogger)
                 Vote.getForBallot(ballotId, principal.userId)
-            }.map { it.toDto() }
+                    .map { it.toDto() }
+            }
 
             if (votes.isNotEmpty()) {
                 call.respond(votes)

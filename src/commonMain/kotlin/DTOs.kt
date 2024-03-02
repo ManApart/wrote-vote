@@ -17,7 +17,6 @@ data class Ballot(
     val opened: String? = "02/25/2024",
     val closed: String? = null,
     val id: Int? = null,
-    val candidates: List<BallotCandidate> = emptyList(),
 )
 
 @Serializable

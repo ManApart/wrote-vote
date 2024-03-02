@@ -13,7 +13,7 @@ enum class Route(val path: String, val route: suspend (String?) -> Unit) {
     AUTH("#auth", { authPage() }),
     BALLOT("#ballot", { manageBallotsPage() }),
     CATEGORIES("#categories", { views.categoriesPage() }),
-    VOTE("#vote/", { section ->
+    VOTE("#vote", { section ->
         val ballot = getBallot(section?.toIntOrNull() ?: 0)
         views.activeBallot(ballot)
     })

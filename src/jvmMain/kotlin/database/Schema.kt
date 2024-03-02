@@ -83,7 +83,9 @@ object Votes : IntIdTable() {
 
 class Vote(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Vote>(Votes) {
-        fun getForBallot(ballot: Int, user: Int) = Vote.find { Votes.ballot.eq(ballot).and { Votes.user.eq(user) } }
+        fun getForBallot(ballot: Int, user: Int): List<Vote> {
+            return Vote.find { Votes.ballot.eq(ballot).and { Votes.user.eq(user) } }.toList()
+        }
     }
 
     var ballot by Ballot referencedOn Votes.ballot

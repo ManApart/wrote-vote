@@ -50,6 +50,7 @@ fun seedSampleData() {
             val roleId = Roles.insertAndGetId { it[name] = "Vote" }
             UserGroups.insertIgnore { it[user] = userDb.id; it[group] = groupId }
             GroupRoles.insertIgnore { it[group] = groupId; it[role] = roleId }
+            RolePermissions.insertIgnore { it[role] = roleId; it[permission] = Permission.VIEW }
             RolePermissions.insertIgnore { it[role] = roleId; it[permission] = Permission.VOTE }
             RolePermissions.insertIgnore { it[role] = roleId; it[permission] = Permission.CREATE }
 
