@@ -38,43 +38,6 @@ fun main() {
     })
 }
 
-fun doRouting() {
-    CoroutineScope(Dispatchers.Default).launch {
-        doRouting(window.location.hash)
-    }
-}
-
-suspend fun doRouting(windowHash: String) {
-    val section = windowHash.split("/").takeIf { it.size == 2 }?.last()
-    section?.let { println("Section: $it") }
-    when {
-        windowHash.startsWith("#auth") -> {
-            authPage()
-        }
-
-        windowHash.startsWith("#ballot/") -> {
-            val ballot = getBallot(section?.toIntOrNull() ?: 0)
-            activeBallot(ballot)
-        }
-
-        else -> mainPage()
-    }
-    section?.let { el<HTMLElement?>(it)?.scrollIntoView() }
-}
-
-fun updateUrl(path: String, section: String? = null) {
-    val pathName = path.split("/").first().capitalize()
-    val newPath = path + (section?.let { "/$it" } ?: "")
-    if (!window.location.href.endsWith("#$newPath")) {
-        window.history.pushState(null, "", "#$newPath")
-    }
-    if (pathName.isBlank()) {
-        document.title = "Vote"
-    } else {
-        document.title = "Vote: $pathName"
-    }
-}
-
 fun el(id: String) = document.getElementById(id) as HTMLElement
 fun <T> el(id: String) = document.getElementById(id) as T
 

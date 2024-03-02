@@ -1,10 +1,11 @@
 package views
 
+import Route
 import replaceElement
 import updateUrl
 
 fun mainPage() {
-    updateUrl("/")
+    updateUrl(Route.MAIN)
     replaceElement {
         nav()
         listActiveBallots()

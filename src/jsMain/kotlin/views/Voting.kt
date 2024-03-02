@@ -1,5 +1,6 @@
 package views
 
+import components.checkBoxComponent
 import dto.Ballot
 import dto.Category
 import dto.Vote
@@ -54,7 +55,7 @@ suspend fun TagConsumer<HTMLElement>.listActiveBallots() {
 }
 
 fun activeBallot(ballot: Ballot) {
-    updateUrl("ballot", ballot.id.toString())
+    updateUrl(Route.VOTE, ballot.id.toString())
     replaceElement {
         nav()
         ballotView(ballot)
@@ -124,24 +125,4 @@ suspend fun TagConsumer<HTMLElement>.ballotView(ballot: Ballot) {
 private fun updateVoteCount(ballot: Ballot, votes: List<Vote>) {
     val voteCount = votes.sumOf { it.points }
     el<HTMLParagraphElement>("vote-count-display").textContent = "You have spent ${voteCount}/${ballot.points} votes."
-}
-
-fun TagConsumer<HTMLElement>.createBallot() {
-
-}
-
-fun TagConsumer<HTMLElement>.checkBoxComponent(divId: String, initiallyChecked: Boolean, onCheck: (Boolean) -> Unit) {
-    var checked: Boolean
-    div("checkbox") {
-            id = divId
-            checked = initiallyChecked
-            if (checked) {
-                +"X"
-            }
-            onClickFunction = {
-                checked = !checked
-                onCheck(checked)
-                el(divId).innerHTML = if(checked) "X" else ""
-        }
-    }
 }

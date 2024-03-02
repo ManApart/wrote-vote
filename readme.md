@@ -13,6 +13,10 @@
 - add keycloak auth?
 - error handling
 - cors for redirect to login
+- access session for permissions on front end?
+- ballot should have options
+  - anonymous or who voted for what
+  - show results before being closed
 
 
 ## Running Locally

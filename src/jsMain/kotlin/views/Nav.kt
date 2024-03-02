@@ -11,7 +11,10 @@ fun TagConsumer<HTMLElement>.nav() {
     div {
         id = "nav"
         a(href = "/login", classes = "button-link") { +"Login" }
-        a(href = "", classes = "button-link") { +"Home" }
         a(href = "#auth", classes = "button-link") { +"Auth" }
+        a(href = "", classes = "button-link") { +"Home" }
+        //TODO - show these based on user having create permission
+        a(href = "#categories", classes = "button-link") { +"Manager Categories" }
+        a(href = "#ballots", classes = "button-link") { +"Manage Ballots" }
     }
 }
