@@ -51,29 +51,45 @@ fun Application.configureAuth() {
             challenge("/login")
         }
 
-        oauth("auth-oauth-hydra") {
+        oauth("auth-oauth-keycloak") {
             urlProvider = { "http://localhost:8080/callback" }
             providerLookup = {
                 OAuthServerSettings.OAuth2ServerSettings(
-                    name = "hydra",
-                    authorizeUrl = "http://localhost:4444/oauth2/auth",
-                    accessTokenUrl = "http://localhost:4444/oauth2/token",
+                    name = "keycloak",
+                    authorizeUrl = "http://localhost:4446/realms/voting/protocol/openid-connect/auth",
+                    accessTokenUrl = "http://localhost:4444/realms/voting/protocol/openid-connect/token",
                     requestMethod = HttpMethod.Post,
-                    clientId = config.authClientId,
-                    clientSecret = config.authClientSecret,
-                    defaultScopes = listOf("offline", "openid", "profile"),
-                    extraAuthParameters = listOf("access_type" to "offline"),
-                    passParamsInURL = true,
-                    onStateCreated = { call, state ->
-                        call.request.queryParameters["redirectUrl"]?.let {
-                            println("Adding redirect: $state $it")
-                            redirects[state] = it
-                        }
-                    }
+                    clientId = "wrote-vote",
+                    clientSecret = "1234",
+                    accessTokenRequiresBasicAuth = false,
+                    defaultScopes = listOf("roles"),
                 )
             }
             client = httpClient
         }
+//        oauth("auth-oauth-hydra") {
+//            urlProvider = { "http://localhost:8080/callback" }
+//            providerLookup = {
+//                OAuthServerSettings.OAuth2ServerSettings(
+//                    name = "hydra",
+//                    authorizeUrl = "http://localhost:4444/oauth2/auth",
+//                    accessTokenUrl = "http://localhost:4444/oauth2/token",
+//                    requestMethod = HttpMethod.Post,
+//                    clientId = config.authClientId,
+//                    clientSecret = config.authClientSecret,
+//                    defaultScopes = listOf("offline", "openid", "profile"),
+//                    extraAuthParameters = listOf("access_type" to "offline"),
+//                    passParamsInURL = true,
+//                    onStateCreated = { call, state ->
+//                        call.request.queryParameters["redirectUrl"]?.let {
+//                            println("Adding redirect: $state $it")
+//                            redirects[state] = it
+//                        }
+//                    }
+//                )
+//            }
+//            client = httpClient
+//        }
     }
 }
 

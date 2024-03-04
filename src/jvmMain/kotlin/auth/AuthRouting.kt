@@ -33,53 +33,56 @@ import java.util.UUID
 data class AuthToken(val sub: String, val aud: List<String>)
 
 fun Routing.authRoutes() {
-    authenticate("auth-oauth-hydra") {
+    authenticate("auth-oauth-keycloak") {
         get("/login") { }
     }
     put("/login") { call.respondRedirect("/login") }
     get("/callback") {
-        val code = call.request.queryParameters["code"]
-        val state = call.request.queryParameters["state"]
-        val scopes = call.request.queryParameters["scope"]
-
-        val tokenRequest = httpClient.post("http://127.0.0.1:4444/oauth2/token") {
-            setBody(FormDataContent(
-                Parameters.build {
-                    append("client_id", config.authClientId)
-                    append("client_secret", config.authClientSecret)
-                    append("grant_type", "authorization_code")
-                    append("state", state!!)
-                    append("code", code!!)
-                    append("scope", scopes!!)
-                    append("redirect_uri", "http://localhost:8080/callback")
-                }
-            ))
-        }
-        val principal: Map<String, String>? = tokenRequest.body()
-        if (code != null && state != null && principal != null) {
-            val jwtPayload = principal["id_token"]!!.split(".")[1]
-            val decoded = String(Base64.getDecoder().decode(jwtPayload))
-            val jwt = jsonMapper.decodeFromString<AuthToken>(decoded)
-            if (!jwt.aud.contains(config.authClientId)) throw IllegalStateException("Token is for wrong audience!")
-            val user = transaction {
-                User.find { Users.sub.eq(jwt.sub) }.single()
-            }
-            val permissions = transaction { user.getPermissions() }
-            val id = user.id.value
-            val key = UUID.randomUUID().toString()
-            val expires = Instant.now().plus(1, ChronoUnit.DAYS)
-
-            println("User $id logged in with permissions $permissions")
-
-            val serverSession = ServerSideUserSession(id, key, principal["id_token"]!!, principal["access_token"]!!, expires, permissions)
-            val session = UserSession(id, key)
-            call.sessions.set(session)
-            userSessions[id] = serverSession
-            redirects[state]?.let { redirect ->
-                call.respondRedirect(redirect)
-                return@get
-            }
-        }
+        println("Got Callback")
+        val principal = call.principal<OAuthAccessTokenResponse.OAuth2>()
+        println("Access:" + principal?.accessToken)
+//        val code = call.request.queryParameters["code"]
+//        val state = call.request.queryParameters["state"]
+//        val scopes = call.request.queryParameters["scope"]
+//
+//        val tokenRequest = httpClient.post("http://127.0.0.1:4444/oauth2/token") {
+//            setBody(FormDataContent(
+//                Parameters.build {
+//                    append("client_id", config.authClientId)
+//                    append("client_secret", config.authClientSecret)
+//                    append("grant_type", "authorization_code")
+//                    append("state", state!!)
+//                    append("code", code!!)
+//                    append("scope", scopes!!)
+//                    append("redirect_uri", "http://localhost:8080/callback")
+//                }
+//            ))
+//        }
+//        val principal: Map<String, String>? = tokenRequest.body()
+//        if (code != null && state != null && principal != null) {
+//            val jwtPayload = principal["id_token"]!!.split(".")[1]
+//            val decoded = String(Base64.getDecoder().decode(jwtPayload))
+//            val jwt = jsonMapper.decodeFromString<AuthToken>(decoded)
+//            if (!jwt.aud.contains(config.authClientId)) throw IllegalStateException("Token is for wrong audience!")
+//            val user = transaction {
+//                User.find { Users.sub.eq(jwt.sub) }.single()
+//            }
+//            val permissions = transaction { user.getPermissions() }
+//            val id = user.id.value
+//            val key = UUID.randomUUID().toString()
+//            val expires = Instant.now().plus(1, ChronoUnit.DAYS)
+//
+//            println("User $id logged in with permissions $permissions")
+//
+//            val serverSession = ServerSideUserSession(id, key, principal["id_token"]!!, principal["access_token"]!!, expires, permissions)
+//            val session = UserSession(id, key)
+//            call.sessions.set(session)
+//            userSessions[id] = serverSession
+//            redirects[state]?.let { redirect ->
+//                call.respondRedirect(redirect)
+//                return@get
+//            }
+//        }
         call.respondRedirect("/")
     }
 
