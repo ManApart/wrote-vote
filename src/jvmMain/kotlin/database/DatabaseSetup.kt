@@ -36,7 +36,7 @@ fun initializeDB() {
 fun seedSampleData() {
     transaction {
         if (User.all().empty()) {
-            val userDb = User.new { name = "Bob"; sub = "foo@bar.com" }
+            val userDb = User.new { name = "Bob"; authId = "bob" }
             val lunch = Category.new { name = "lunch" }
             val c1 = Candidate.new { name = "Chick Fila"; category = lunch }
             val c2 = Candidate.new { name = "Chipotle"; category = lunch }
@@ -52,6 +52,11 @@ fun seedSampleData() {
             GroupRoles.insertIgnore { it[group] = groupId; it[role] = roleId }
             RolePermissions.insertIgnore { it[role] = roleId; it[permission] = Permission.VIEW }
             RolePermissions.insertIgnore { it[role] = roleId; it[permission] = Permission.VOTE }
+
+            val creatorGroupId = Groups.insertAndGetId { it[name] = "Creator" }
+            val creatorRoleId = Roles.insertAndGetId { it[name] = "Create" }
+            UserGroups.insertIgnore { it[user] = userDb.id; it[group] = creatorGroupId }
+            GroupRoles.insertIgnore { it[group] = groupId; it[role] = creatorRoleId }
             RolePermissions.insertIgnore { it[role] = roleId; it[permission] = Permission.CREATE }
 
         }

@@ -23,7 +23,7 @@ enum class Permission { VIEW, VOTE, CREATE }
 data class ServerSideUserSession(
     val userId: Int,
     val key: String,
-    val idToken: String,
+    val authCode: String,
     val accessToken: String,
     val expires: Instant,
     val permissions: List<Permission>,
@@ -51,13 +51,13 @@ fun Application.configureAuth() {
             challenge("/login")
         }
 
-        oauth("auth-oauth-keycloak") {
+        oauth("auth-keycloak") {
             urlProvider = { "http://localhost:8080/callback" }
             providerLookup = {
                 OAuthServerSettings.OAuth2ServerSettings(
                     name = "keycloak",
                     authorizeUrl = "http://localhost:4446/realms/voting/protocol/openid-connect/auth",
-                    accessTokenUrl = "http://localhost:4444/realms/voting/protocol/openid-connect/token",
+                    accessTokenUrl = "http://localhost:4446/realms/voting/protocol/openid-connect/token",
                     requestMethod = HttpMethod.Post,
                     clientId = "wrote-vote",
                     clientSecret = "1234",
@@ -94,9 +94,9 @@ fun Application.configureAuth() {
 }
 
 
-suspend fun PipelineContext<Unit, ApplicationCall>.authedWith(vararg permission: Permission, block: suspend PipelineContext<Unit, ApplicationCall>.() -> Unit){
+suspend fun PipelineContext<Unit, ApplicationCall>.authedWith(vararg permission: Permission, block: suspend PipelineContext<Unit, ApplicationCall>.() -> Unit) {
     val session = userSessions[call.principal<UserSession>()!!.userId]!!
-    if (session.permissions.containsAll(permission.toList())){
+    if (session.permissions.containsAll(permission.toList())) {
         block()
     } else {
         throw IllegalStateException("User ${session.userId} does not have permissions $permission")

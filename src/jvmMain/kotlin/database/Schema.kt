@@ -105,14 +105,14 @@ class Vote(id: EntityID<Int>) : IntEntity(id) {
 
 object Users : IntIdTable() {
     val name = varchar("name", 50).index()
-    val sub = varchar("sub", 50).index()
+    val authId = varchar("auth_id", 50).index()
 }
 
 class User(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<User>(Users)
 
     var name by Users.name
-    var sub by Users.sub
+    var authId by Users.authId
 
     fun getPermissions(): List<Permission> {
         return Users.join(UserGroups, JoinType.INNER, Users.id, UserGroups.user)
@@ -121,6 +121,7 @@ class User(id: EntityID<Int>) : IntEntity(id) {
             .select (Users.id.eq(this@User.id))
             .map { it[RolePermissions.permission] }
     }
+
 }
 
 object UserGroups : IntIdTable() {
@@ -130,6 +131,11 @@ object UserGroups : IntIdTable() {
 
 object Groups : IntIdTable() {
     val name = varchar("name", 50).index()
+}
+
+class Group(id: EntityID<Int>) : IntEntity(id){
+    companion object : IntEntityClass<Group>(Groups)
+    val name by Groups.name
 }
 
 object GroupRoles : IntIdTable() {
