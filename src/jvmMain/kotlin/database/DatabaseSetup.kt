@@ -36,14 +36,14 @@ fun initializeDB() {
 fun seedSampleData() {
     transaction {
         if (User.all().empty()) {
+            val userDb = User.new { name = "Bob"; sub = "foo@bar.com" }
             val lunch = Category.new { name = "lunch" }
             val c1 = Candidate.new { name = "Chick Fila"; category = lunch }
             val c2 = Candidate.new { name = "Chipotle"; category = lunch }
-            val ballot = Ballot.new { name = "Sample Vote"; category = lunch }
+            val ballot = Ballot.new { name = "Sample Vote"; category = lunch; createdBy = userDb }
             val bc1 = BallotCandidate.new { this.ballot = ballot; candidate = c1 }
             BallotCandidate.new { this.ballot = ballot; candidate = c2 }
 
-            val userDb = User.new { name = "Bob"; sub = "foo@bar.com" }
             Vote.new { this.ballot = ballot; this.user = userDb; selection = bc1 }
 
             val groupId = Groups.insertAndGetId { it[name] = "Voter" }
