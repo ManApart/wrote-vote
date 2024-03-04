@@ -22,7 +22,6 @@ data class Ballot(
 @Serializable
 data class BallotCandidate(
     val candidate: Int,
-    val category: Int,
 )
 
 @Serializable

@@ -11,6 +11,7 @@ import io.ktor.server.routing.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.lang.IllegalArgumentException
+import java.time.LocalDateTime
 
 fun Route.voteApiRoutes() {
     get("/categories") {
@@ -68,42 +69,82 @@ fun Route.voteApiRoutes() {
         }
     }
 
-    //update the ballot
     put("/ballot/{id}") {
-        //TODO check permissions, and that it's the author of the ballot
         authedWith(Permission.CREATE) {
             val id = call.parameters["id"]!!.toInt()
-            val candidates = call.receive<List<dto.Ballot>>()
+            val updatedBallet = call.receive<dto.Ballot>()
+            val session = call.principal<UserSession>()!!
 
             transaction {
                 val existingBallot = Ballot[id]
-                if (existingBallot.opened == null) {
-//TODO - update candidates in different method
-                    val existingCandidates = BallotCandidate.find { BallotCandidates.ballot.eq(id) }
+                if (existingBallot.isEditable(session.userId)) {
+                    existingBallot.points = updatedBallet.points
+                    existingBallot.pointsPerChoice = updatedBallet.pointsPerChoice
                 }
             }
-            //TODO
-            //once ballot is opened, no edits other than closing it
+            call.respond(HttpStatusCode.Accepted)
+        }
+    }
+    delete("/ballot/{id}") {
+        authedWith(Permission.CREATE) {
+            val id = call.parameters["id"]!!.toInt()
+            val session = call.principal<UserSession>()!!
+            transaction {
+                val existingBallot = Ballot[id]
+                if (existingBallot.isEditable(session.userId)) {
+                    //TODO - delete unopened ballet (mark inactive)
+                }
+            }
+            call.respond(HttpStatusCode.NotImplemented)
+        }
+    }
+
+    put("/ballot/{id}/state") {
+        authedWith(Permission.CREATE) {
+            val id = call.parameters["id"]!!.toInt()
+            val session = call.principal<UserSession>()!!
+
+            transaction {
+                val existingBallot = Ballot[id]
+                if (existingBallot.isEditable(session.userId)) {
+                    if (existingBallot.opened == null) {
+                        existingBallot.opened = LocalDateTime.now()
+                    } else if (existingBallot.closed == null) {
+                        existingBallot.closed = LocalDateTime.now()
+                    }
+                }
+            }
+            call.respond(HttpStatusCode.Accepted)
         }
     }
 
     put("/ballot/{ballot}/candidates") {
         authedWith(Permission.CREATE) {
             val id = call.parameters["id"]!!.toInt()
-            val candidates = call.receive<List<dto.Ballot>>()
-            //TODO check permissions, and that it's the author of the ballot
+            val candidates = call.receive<List<dto.BallotCandidate>>()
+            val session = call.principal<UserSession>()!!
 
             transaction {
                 val existingBallot = Ballot[id]
-                if (existingBallot.opened == null) {
-//TODO - update candidates in different method
+                if (existingBallot.isEditable(session.userId)) {
                     val existingCandidates = BallotCandidate.find { BallotCandidates.ballot.eq(id) }
-                    //Deactivate missing candidates
-                    //Add new candidates
+
+                    val (matches, missing) = existingCandidates
+                        .partition { e -> candidates.none { c -> c.candidate == e.candidate.id.value } }
+
+                    val new = candidates.filter { c -> existingCandidates.none { e -> e.candidate.id.value == c.candidate } }
+
+                    matches.forEach { it.active = true }
+                    missing.forEach { it.active = false }
+                    new.forEach { c ->
+                        BallotCandidates.insertIgnore {
+                            it[ballot] = id
+                            it[candidate] = c.candidate
+                        }
+                    }
                 }
             }
-            //TODO
-            //once ballot is opened, no edits other than closing it
+            call.respond(HttpStatusCode.Accepted)
         }
     }
 
@@ -122,7 +163,7 @@ fun Route.voteApiRoutes() {
                 call.respond(votes)
             } else {
                 val newVotes = transaction {
-                    BallotCandidate.find { BallotCandidates.ballot.eq(ballotId) }.map { candidate ->
+                    BallotCandidate.find { BallotCandidates.ballot.eq(ballotId).and { BallotCandidates.active.eq(true) } }.map { candidate ->
                         Votes.insertAndGetId {
                             it[ballot] = ballotId
                             it[user] = principal.userId

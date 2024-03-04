@@ -41,6 +41,7 @@ class Candidate(id: EntityID<Int>) : IntEntity(id) {
 object Ballots : IntIdTable() {
     val name = varchar("name", 100)
     val category = reference("category", Categories.id)
+    val createdBy = reference("user", Users.id)
     val points = integer("points").default(1)
     val pointsPerChoice = integer("points_per_choice").default(1)
     val opened = datetime("opened").nullable()
@@ -53,17 +54,21 @@ class Ballot(id: EntityID<Int>) : IntEntity(id) {
 
     var name by Ballots.name
     var category by Category referencedOn Ballots.category
+    var createdBy by User referencedOn Ballots.createdBy
     var points by Ballots.points
     var pointsPerChoice by Ballots.pointsPerChoice
     var opened by Ballots.opened
     var closed by Ballots.closed
 
     fun toDto() = dto.Ballot(name, category.id.value, points, pointsPerChoice, opened?.toString(), closed?.toString(), id.value)
+
+    fun isEditable(user: Int) = opened == null && createdBy.id.value == user
 }
 
 object BallotCandidates : IntIdTable() {
     val ballot = reference("ballot", Ballots.id)
     val candidate = reference("candidate", Candidates.id)
+    val active = bool("active").default(true)
 }
 
 class BallotCandidate(id: EntityID<Int>) : IntEntity(id) {
@@ -71,6 +76,7 @@ class BallotCandidate(id: EntityID<Int>) : IntEntity(id) {
 
     var ballot by Ballot referencedOn BallotCandidates.ballot
     var candidate by Candidate referencedOn BallotCandidates.candidate
+    var active by BallotCandidates.active
 }
 
 object Votes : IntIdTable() {
