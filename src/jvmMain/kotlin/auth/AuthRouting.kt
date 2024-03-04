@@ -65,6 +65,14 @@ fun Routing.authRoutes() {
             userSessions[id] = serverSession
             call.respondRedirect("/")
         }
+
+        authenticate("auth-session") {
+            get("/logout") {
+                val session = call.principal<UserSession>()!!
+                userSessions.remove(session.userId)
+                call.respondRedirect("http://localhost:4446/realms/voting/protocol/openid-connect/logout")
+            }
+        }
     }
 
 
