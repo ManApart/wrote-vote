@@ -116,7 +116,7 @@ class User(id: EntityID<Int>) : IntEntity(id) {
 
     fun getPermissions(): List<Permission> {
         return Users.join(UserGroups, JoinType.INNER, Users.id, UserGroups.user)
-            .join(GroupRoles, JoinType.INNER, UserGroups.id, GroupRoles.group)
+            .join(GroupRoles, JoinType.INNER, UserGroups.group, GroupRoles.group)
             .join(RolePermissions, JoinType.INNER, GroupRoles.role, RolePermissions.role)
             .select (Users.id.eq(this@User.id))
             .map { it[RolePermissions.permission] }

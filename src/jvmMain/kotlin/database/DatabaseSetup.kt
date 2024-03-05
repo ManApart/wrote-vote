@@ -56,8 +56,8 @@ fun seedSampleData() {
             val creatorGroupId = Groups.insertAndGetId { it[name] = "Creator" }
             val creatorRoleId = Roles.insertAndGetId { it[name] = "Create" }
             UserGroups.insertIgnore { it[user] = userDb.id; it[group] = creatorGroupId }
-            GroupRoles.insertIgnore { it[group] = groupId; it[role] = creatorRoleId }
-            RolePermissions.insertIgnore { it[role] = roleId; it[permission] = Permission.CREATE }
+            GroupRoles.insertIgnore { it[group] = creatorGroupId; it[role] = creatorRoleId }
+            RolePermissions.insertIgnore { it[role] = creatorRoleId; it[permission] = Permission.CREATE }
 
         }
     }

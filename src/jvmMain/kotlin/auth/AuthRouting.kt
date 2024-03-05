@@ -18,6 +18,8 @@ import jsonMapper
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import org.jetbrains.exposed.sql.StdOutSqlLogger
+import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
@@ -56,7 +58,7 @@ fun Routing.authRoutes() {
                     append("grant_type", "authorization_code")
                     append("state", state!!)
                     append("code", code)
-                    scopes?.let { append("scope", it)}
+                    scopes?.let { append("scope", it) }
                     append("redirect_uri", "http://localhost:8080/callback")
                 }
             ))
@@ -65,7 +67,7 @@ fun Routing.authRoutes() {
         val jwtPayload = principal.accessToken.split(".")[1]
         val decoded = String(Base64.getDecoder().decode(jwtPayload))
         val jwt = jsonMapper.decodeFromString<JWT>(decoded)
-            if (jwt.azp != "wrote-vote") throw IllegalStateException("Token is for wrong audience!")
+        if (jwt.azp != "wrote-vote") throw IllegalStateException("Token is for wrong audience!")
         val user = transaction {
             val userCount = User.find { Users.authId.eq(jwt.sub) }.count()
             if (userCount == 1L) {
@@ -83,7 +85,7 @@ fun Routing.authRoutes() {
         val key = UUID.randomUUID().toString()
         val expires = Instant.now().plus(1, ChronoUnit.DAYS)
 
-        println("User $id logged in with permissions $permissions")
+        println("User $id (${user.name}) logged in with permissions $permissions")
 
         val serverSession = ServerSideUserSession(id, key, code, principal.accessToken, expires, permissions)
         val session = UserSession(id, key)
