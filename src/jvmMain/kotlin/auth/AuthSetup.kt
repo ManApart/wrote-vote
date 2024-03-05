@@ -5,13 +5,9 @@ import httpClient
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.response.*
 import io.ktor.server.sessions.*
-import io.ktor.server.util.*
 import io.ktor.util.pipeline.*
-import java.lang.IllegalStateException
 import java.time.Instant
-import java.time.LocalDateTime
 
 
 val redirects = mutableMapOf<String, String>()
@@ -67,29 +63,29 @@ fun Application.configureAuth() {
             }
             client = httpClient
         }
-//        oauth("auth-oauth-hydra") {
-//            urlProvider = { "http://localhost:8080/callback" }
-//            providerLookup = {
-//                OAuthServerSettings.OAuth2ServerSettings(
-//                    name = "hydra",
-//                    authorizeUrl = "http://localhost:4444/oauth2/auth",
-//                    accessTokenUrl = "http://localhost:4444/oauth2/token",
-//                    requestMethod = HttpMethod.Post,
-//                    clientId = config.authClientId,
-//                    clientSecret = config.authClientSecret,
-//                    defaultScopes = listOf("offline", "openid", "profile"),
-//                    extraAuthParameters = listOf("access_type" to "offline"),
-//                    passParamsInURL = true,
-//                    onStateCreated = { call, state ->
-//                        call.request.queryParameters["redirectUrl"]?.let {
-//                            println("Adding redirect: $state $it")
-//                            redirects[state] = it
-//                        }
-//                    }
-//                )
-//            }
-//            client = httpClient
-//        }
+        oauth("auth-oauth-hydra") {
+            urlProvider = { "http://localhost:8080/callback-oauth" }
+            providerLookup = {
+                OAuthServerSettings.OAuth2ServerSettings(
+                    name = "hydra",
+                    authorizeUrl = "http://localhost:4444/oauth2/auth",
+                    accessTokenUrl = "http://localhost:4444/oauth2/token",
+                    requestMethod = HttpMethod.Post,
+                    clientId = config.authClientId,
+                    clientSecret = config.authClientSecret,
+                    defaultScopes = listOf("offline", "openid", "profile"),
+                    extraAuthParameters = listOf("access_type" to "offline"),
+                    passParamsInURL = true,
+                    onStateCreated = { call, state ->
+                        call.request.queryParameters["redirectUrl"]?.let {
+                            println("Adding redirect: $state $it")
+                            redirects[state] = it
+                        }
+                    }
+                )
+            }
+            client = httpClient
+        }
     }
 }
 

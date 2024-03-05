@@ -19,6 +19,7 @@
   - anonymous or who voted for what
   - show results before being closed
 - Sign the jwt?
+- hydra get user name in jwt
 
 
 ## Running Locally

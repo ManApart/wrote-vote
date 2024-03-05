@@ -15,83 +15,34 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import jsonMapper
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.insertIgnore
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.Instant
 import java.time.temporal.ChronoUnit
-import java.util.Base64
-import java.util.UUID
-
-@Serializable
-data class AuthToken(val sub: String, val aud: List<String>)
-
-@Serializable
-data class JWTWrapper(
-    @SerialName("access_token") val accessToken: String,
-    @SerialName("refresh_token") val refreshToken: String,
-    val scope: String
-)
-
-@Serializable
-data class JWT(val sub: String, val azp: String, val name: String)
-
+import java.util.*
 
 fun Routing.authRoutes() {
     authenticate("auth-keycloak") {
         get("/login") { }
     }
+    authenticate("auth-oauth-hydra") {
+        get("/login-oauth") { }
+    }
 
     get("/callback") {
         val code = call.request.queryParameters["code"]!!
-        val state = call.request.queryParameters["state"]
-        val scopes = call.request.queryParameters["scope"]
-        val tokenRequest = httpClient.post("http://localhost:4446/realms/voting/protocol/openid-connect/token") {
-            setBody(FormDataContent(
-                Parameters.build {
-                    append("client_id", "wrote-vote")
-                    append("client_secret", config.keycloakAuthClientSecret)
-                    append("grant_type", "authorization_code")
-                    append("state", state!!)
-                    append("code", code)
-                    scopes?.let { append("scope", it) }
-                    append("redirect_uri", "http://localhost:8080/callback")
-                }
-            ))
-        }
-        val principal = tokenRequest.body<JWTWrapper>()
-        val jwtPayload = principal.accessToken.split(".")[1]
-        val decoded = String(Base64.getDecoder().decode(jwtPayload))
-        val jwt = jsonMapper.decodeFromString<JWT>(decoded)
-        if (jwt.azp != "wrote-vote") throw IllegalStateException("Token is for wrong audience!")
-        val user = transaction {
-            val userCount = User.find { Users.authId.eq(jwt.sub) }.count()
-            if (userCount == 1L) {
-                User.find { Users.authId.eq(jwt.sub) }.single()
-            } else {
-                val userDb = User.new { name = jwt.name; authId = jwt.sub }
-                val groupDb = Group.find { Groups.name.eq("Voter") }.single()
-                UserGroups.insertIgnore { it[group] = groupDb.id; it[user] = userDb.id }
+        val principal = call.getPrincipal( "http://localhost:4446/realms/voting/protocol/openid-connect/token", "http://localhost:8080/callback", "wrote-vote", config.keycloakAuthClientSecret)
+        val jwt = principal.getJWT<KeycloakJWT>()
+        jwt.validate("wrote-vote")
+        call.logInUser(jwt.sub, jwt.name, code, principal.accessToken)
+    }
 
-                userDb
-            }
-        }
-        val permissions = transaction { user.getPermissions() }
-        val id = user.id.value
-        val key = UUID.randomUUID().toString()
-        val expires = Instant.now().plus(1, ChronoUnit.DAYS)
-
-        println("User $id (${user.name}) logged in with permissions $permissions")
-
-        val serverSession = ServerSideUserSession(id, key, code, principal.accessToken, expires, permissions)
-        val session = UserSession(id, key)
-        call.sessions.set(session)
-        userSessions[id] = serverSession
-        call.respondRedirect("/")
+    get("/callback-oauth") {
+        val principal = call.getPrincipal( "http://127.0.0.1:4444/oauth2/token", "http://localhost:8080/callback-oauth", config.authClientId, config.authClientSecret)
+        val jwt = principal.getJWT<HydraJWT>()
+        jwt.validate(config.authClientId)
+        call.logInUser(jwt.sub, jwt.sub, principal.idToken!!, principal.accessToken)
     }
 
     authenticate("auth-session") {
@@ -112,6 +63,61 @@ fun Routing.authRoutes() {
             call.respondText("Hello!")
         }
     }
+}
+
+private suspend fun ApplicationCall.getPrincipal(tokenUrl: String, redirectUri: String, clientId: String, clientSecret: String): JWTWrapper {
+    val code = request.queryParameters["code"]!!
+    val state = request.queryParameters["state"]
+    val scopes = request.queryParameters["scope"]
+    return httpClient.post(tokenUrl) {
+        setBody(FormDataContent(
+            Parameters.build {
+                append("client_id", clientId)
+                append("client_secret", clientSecret)
+                append("grant_type", "authorization_code")
+                append("state", state!!)
+                append("code", code)
+                scopes?.let { append("scope", it) }
+                append("redirect_uri", redirectUri)
+            }
+        ))
+    }.body<JWTWrapper>()
+}
+
+private inline fun <reified JWT> JWTWrapper.getJWT(): JWT {
+    val jwtPayload = (idToken ?: accessToken).split(".")[1]
+    val decoded = String(Base64.getDecoder().decode(jwtPayload))
+    return jsonMapper.decodeFromString(decoded)
+}
+
+private suspend fun ApplicationCall.logInUser(jwtSub: String, jwtName: String, code: String, accessToken: String){
+    val user = transaction {
+        val userCount = User.find { Users.authId.eq(jwtSub) }.count()
+        if (userCount == 1L) {
+            User.find { Users.authId.eq(jwtSub) }.single()
+        } else {
+            val userDb = User.new { name = jwtName; authId = jwtSub }
+            val groupDb = Group.find { Groups.name.eq("Voter") }.single()
+            UserGroups.insertIgnore { it[group] = groupDb.id; it[user] = userDb.id }
+
+            userDb
+        }
+    }
+    val permissions = transaction { user.getPermissions() }
+    val id = user.id.value
+    val key = UUID.randomUUID().toString()
+    val expires = Instant.now().plus(1, ChronoUnit.DAYS)
+
+    println("User $id (${user.name}) logged in with permissions $permissions")
+    val serverSession = ServerSideUserSession(id, key, code, accessToken, expires, permissions)
+    val session = UserSession(id, key)
+    this.sessions.set(session)
+    userSessions[id] = serverSession
+//    redirects[state]?.let { redirect ->
+//        call.respondRedirect(redirect)
+//        return@get
+//    }
+    respondRedirect("/")
 }
 
 private suspend fun getPersonalGreeting(

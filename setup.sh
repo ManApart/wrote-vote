@@ -41,7 +41,7 @@ code_client=$(docker exec hydra hydra create client \
 --format json \
 --token-endpoint-auth-method client_secret_post \
 --scope openid --scope offline --scope profile \
---redirect-uri http://localhost:8080/callback)
+--redirect-uri http://localhost:8080/callback-oauth)
 
 code_client_id=$(echo $code_client | jq -r '.client_id')
 code_client_secret=$(echo $code_client | jq -r '.client_secret')
