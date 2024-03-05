@@ -5,6 +5,7 @@ data class AppConfig(
     val postgresPassword: String,
     val authClientId: String,
     val authClientSecret: String,
+    val keycloakAuthClientSecret: String,
 )
 
 fun readConfig(): AppConfig {
@@ -16,5 +17,11 @@ fun readConfig(): AppConfig {
         val (key, value) = it.split("=")
         key to value
     }
-    return AppConfig(raw["POSTGRES_USER"]!!, raw["POSTGRES_PASSWORD"]!!, rawAuth["auth_client_id"]!!,rawAuth["auth_client_secret"]!!)
+    return AppConfig(
+        raw["POSTGRES_USER"]!!,
+        raw["POSTGRES_PASSWORD"]!!,
+        rawAuth["auth_client_id"]!!,
+        rawAuth["auth_client_secret"]!!,
+        rawAuth["keycloak_auth_client_secret"]!!
+    )
 }

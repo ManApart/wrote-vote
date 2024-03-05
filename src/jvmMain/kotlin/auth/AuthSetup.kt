@@ -60,7 +60,7 @@ fun Application.configureAuth() {
                     accessTokenUrl = "http://localhost:4446/realms/voting/protocol/openid-connect/token",
                     requestMethod = HttpMethod.Post,
                     clientId = "wrote-vote",
-                    clientSecret = "1234",
+                    clientSecret = config.keycloakAuthClientSecret,
                     accessTokenRequiresBasicAuth = false,
                     defaultScopes = listOf("roles"),
                 )

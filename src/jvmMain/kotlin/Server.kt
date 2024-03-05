@@ -20,16 +20,17 @@ import io.ktor.server.routing.*
 
 val config = readConfig()
 
-val httpClient = HttpClient(CIO) {
-    install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
-        json()
-    }
-}
-
 val jsonMapper = kotlinx.serialization.json.Json {
     ignoreUnknownKeys = true
     encodeDefaults = false
 }
+
+val httpClient = HttpClient(CIO) {
+    install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
+        json(jsonMapper)
+    }
+}
+
 
 fun main() {
     val usedPort = System.getenv("PORT")?.toInt() ?: 8080

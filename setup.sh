@@ -5,11 +5,24 @@ salt_pass=$(openssl rand -hex 20)
 sed -i -e "s/- youReallyNeedToChangeThis/- $system_pass/g" ./compose/hydra.yml
 sed -i -e "s/salt: youReallyNeedToChangeThis/salt: $salt_pass/g" ./compose/hydra.yml
 
+#Generate Client Secrets
+cp ./compose/realm-base.json ./compose/realm.json
+keycloak_client_secret=$(openssl rand -hex 20)
+sed -i -e "s/\*\**/$keycloak_client_secret/g" ./compose/realm.json
+
 #.env secrets
 if [ ! -f .env ]; then
   postgres_pass=$(openssl rand -hex 20)
   echo "POSTGRES_USER=president" > .env
   echo "POSTGRES_PASSWORD=$postgres_pass" >> .env
+
+  keycloak_postgres_pass=$(openssl rand -hex 20)
+  keycloak_admin_pass=$(openssl rand -hex 20)
+  echo "KEYCLOAK_ADMIN=admin" >> .env
+  echo "KEYCLOAK_ADMIN_PASSWORD=$keycloak_admin_pass" >> .env
+  echo "KEYCLOAK_POSTGRESQL_USER=keycloak" >> .env
+  echo "KEYCLOAK_POSTGRESQL_DB=keycloak" >> .env
+  echo "KEYCLOAK_POSTGRESQL_PASS=$keycloak_postgres_pass" >> .env
 fi
 
 docker-compose up -d
@@ -36,5 +49,6 @@ code_client_secret=$(echo $code_client | jq -r '.client_secret')
 #Auth Secrets
 echo "auth_client_id=$code_client_id" > ./auth-secrets.txt
 echo "auth_client_secret=$code_client_secret" >> ./auth-secrets.txt
+echo "keycloak_auth_client_secret=$keycloak_client_secret" >> ./auth-secrets.txt
 
 echo Setup Complete

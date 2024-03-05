@@ -48,3 +48,4 @@ db-data
 auth-secrets.txt
 .env
 hydra.yml
+realm.json

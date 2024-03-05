@@ -14,7 +14,28 @@ services:
         target: /var/lib/postgresql/data/
         read_only: false
     ports:
-     - 15432:5432
+      - 15432:5432
+  keycloak:
+    image: 'quay.io/keycloak/keycloak:24.0.0'
+    container_name: keycloak
+    depends_on:
+      - database
+    restart: always
+    environment:
+      - KEYCLOAK_ADMIN=${KEYCLOAK_ADMIN}
+      - KEYCLOAK_ADMIN_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD}
+      - DB_VENDOR=postgres
+      - DB_ADDR=postgres
+      - DB_DATABASE=${KEYCLOAK_POSTGRESQL_DB}
+      - DB_USER=${KEYCLOAK_POSTGRESQL_USER}
+      - DB_PASSWORD=${KEYCLOAK_POSTGRESQL_PASS}
+    command:
+      - start-dev
+      - --import-realm
+    volumes:
+      - ./compose/realm.json:/opt/keycloak/data/import/realm.json
+    ports:
+      - 4446:8080
   hydra:
     image: oryd/hydra:v2.2.0
     container_name: hydra
