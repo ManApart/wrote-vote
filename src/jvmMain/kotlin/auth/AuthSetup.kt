@@ -99,6 +99,6 @@ suspend fun PipelineContext<Unit, ApplicationCall>.authedWith(vararg permission:
     if (session.permissions.containsAll(permission.toList())) {
         block()
     } else {
-        throw IllegalStateException("User ${session.userId} does not have permissions $permission")
+        throw IllegalStateException("User ${session.userId} does not have permissions ${permission.toList()}")
     }
 }

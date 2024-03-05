@@ -45,7 +45,6 @@ fun Routing.authRoutes() {
     }
 
     get("/callback") {
-        println("Got Callback")
         val code = call.request.queryParameters["code"]!!
         val state = call.request.queryParameters["state"]
         val scopes = call.request.queryParameters["scope"]
@@ -63,7 +62,6 @@ fun Routing.authRoutes() {
             ))
         }
         val principal = tokenRequest.body<JWTWrapper>()
-        println("Details: $code, $state, $scopes, $principal")
         val jwtPayload = principal.accessToken.split(".")[1]
         val decoded = String(Base64.getDecoder().decode(jwtPayload))
         val jwt = jsonMapper.decodeFromString<JWT>(decoded)
@@ -76,6 +74,7 @@ fun Routing.authRoutes() {
                 val userDb = User.new { name = jwt.name; authId = jwt.sub }
                 val groupDb = Group.find { Groups.name.eq("Voter") }.single()
                 UserGroups.insertIgnore { it[group] = groupDb.id; it[user] = userDb.id }
+
                 userDb
             }
         }
