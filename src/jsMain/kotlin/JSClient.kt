@@ -11,13 +11,7 @@ import kotlinx.dom.addClass
 import kotlinx.dom.createElement
 import kotlinx.html.TagConsumer
 import kotlinx.html.dom.append
-import kotlinx.html.js.a
-import kotlinx.html.js.div
-import kotlinx.html.style
 import org.w3c.dom.HTMLElement
-import views.activeBallot
-import views.authPage
-import views.mainPage
 
 
 val jsonMapper = kotlinx.serialization.json.Json {
