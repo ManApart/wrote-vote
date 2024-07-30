@@ -48,7 +48,6 @@ object Ballots : IntIdTable() {
     val closed = datetime("closed").nullable()
 }
 
-//Add Created by
 class Ballot(id: EntityID<Int>) : IntEntity(id) {
     companion object : IntEntityClass<Ballot>(Ballots)
 
